@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verify Crop - CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link rel="stylesheet" href="background.css"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a;
+      --green-mid: #2d6a4f;
+      --green-bright: #52b788;
+      --green-light: #b7e4c7;
+      --gold: #d4a017;
+      --red: #e74c3c;
+      --white: #ffffff;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a1f12;
+      min-height: 100vh;
+    }
+    nav {
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-light);
+      text-decoration: none;
+    }
+    .logo span { color: var(--gold); }
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.62);
+      text-decoration: none;
+      font-size: 0.88rem;
+      margin-left: 1.2rem;
+    }
+    .nav-links a:hover { color: var(--green-bright); }
+    .verify-hero {
+      padding: 4rem 5%;
+      text-align: center;
+    }
+    .verify-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      color: #fff;
+    }
+    .verify-hero h1 em {
+      color: var(--green-bright);
+      font-style: normal;
+    }
+    .verify-hero p {
+      color: rgba(255, 255, 255, 0.62);
+      margin-top: 0.8rem;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+    .verify-box {
+      max-width: 640px;
+      margin: 2.5rem auto 0;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(82, 183, 136, 0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+    }
+    .verify-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .verify-tab {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.5);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .verify-tab.active {
+      background: var(--green-bright);
+      color: var(--green-deep);
+      border-color: var(--green-bright);
+      font-weight: 600;
+    }
+    #qr-reader {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 1rem;
+      background: #000 !important;
+      position: relative;
+    }
+    .qr-scanner-container {
+      position: relative;
+      width: 100%;
+    }
+    .qr-instructions {
+      background: rgba(82, 183, 136, 0.15);
+      border: 1px solid rgba(82, 183, 136, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      color: var(--green-light);
+      font-size: 0.85rem;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .qr-instructions i {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .btn-close-scanner {
+      background: var(--red);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-top: 1rem;
+      width: 100%;
+      transition: all 0.2s;
+    }
+    .btn-close-scanner:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+    }
+    .camera-permission-notice {
+      background: rgba(231, 76, 60, 0.15);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+      border-radius: 8px;
+      padding: 1rem;
+      color: #ff9f96;
+      font-size: 0.85rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .camera-permission-notice.show {
+      display: block;
+    }
+    .verify-input-area {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .verify-input-area input {
+      flex: 1;
+      padding: 0.9rem 1.2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+    }
+    .verify-input-area input::placeholder { color: rgba(255, 255, 255, 0.35); }
+    .verify-input-area input:focus {
+      outline: none;
+      border-color: var(--green-bright);
+    }
+    .btn-verify {
+      background: var(--green-bright);
+      color: var(--green-deep);
+      border: none;
+      padding: 0.9rem 1.5rem;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-verify:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(82, 183, 136, 0.4);
+    }
+    .btn-verify:disabled {
+      background: #4e5d56;
+      color: #b8c0bb;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .verify-hint {
+      margin-top: 0.9rem;
+      color: rgba(255, 255, 255, 0.48);
+      font-size: 0.82rem;
+    }
+    .result-section {
+      max-width: 940px;
+      margin: 3rem auto;
+      padding: 0 5% 4rem;
+      display: none;
+    }
+    .result-section.show {
+      display: block;
+      animation: fadeIn 0.45s ease;
+    }
+    .auth-banner {
+      border-radius: 16px;
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .auth-banner.authentic { background: linear-gradient(135deg, #1b5e20, #2d6a4f); }
+    .auth-banner.fake { background: linear-gradient(135deg, #641e16, #922b21); }
+    .auth-icon {
+      font-size: 3rem;
+      line-height: 1;
+    }
+    .auth-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: #fff;
+    }
+    .auth-sub {
+      color: rgba(255, 255, 255, 0.74);
+      margin-top: 0.3rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .auth-score {
+      margin-left: auto;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+    }
+    .auth-score-num {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .auth-score-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .detail-card,
+    .soil-visual,
+    .journey-mini {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(82, 183, 136, 0.2);
+      backdrop-filter: blur(10px);
+    }
+    .detail-title,
+    .journey-mini-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid rgba(82, 183, 136, 0.2);
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 1rem;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.52);
+    }
+    .detail-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+      text-align: right;
+    }
+    .soil-bars {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .soil-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.72);
+      margin-bottom: 0.4rem;
+      gap: 1rem;
+    }
+    .soil-bar-track {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .soil-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.8s ease;
+    }
+    .soil-summary {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      background: rgba(82, 183, 136, 0.08);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--green-light);
+      border-left: 3px solid var(--green-bright);
+      line-height: 1.5;
+    }
+    .mini-steps {
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .mini-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      min-width: 92px;
+    }
+    .mini-step-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.82);
+    }
+    .mini-step-icon.done {
+      border-color: var(--green-bright);
+      background: rgba(82, 183, 136, 0.12);
+    }
+    .mini-step-icon.current {
+      border-color: var(--gold);
+      background: rgba(212, 160, 23, 0.12);
+    }
+    .mini-step-label {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.58);
+      text-align: center;
+    }
+    .mini-step-time {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.42);
+      text-align: center;
+    }
+    .mini-connector {
+      flex: 1;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.12);
+      min-width: 24px;
+    }
+    .mini-connector.done { background: var(--green-bright); }
+    .dna-verify {
+      background: #0d1f15;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .dna-verify-title {
+      color: var(--green-light);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .dna-verify-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--green-bright);
+      word-break: break-all;
+      line-height: 1.8;
+    }
+    .dna-verify-check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+      color: var(--green-bright);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .report-btn {
+      width: 100%;
+      background: var(--green-deep);
+      color: #fff;
+      border: none;
+      padding: 1rem;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .report-btn:hover { background: var(--green-mid); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 4%; }
+      .verify-hero { padding: 2.5rem 4%; }
+      .verify-hero h1 { font-size: 1.8rem; }
+      .verify-hero p { font-size: 0.92rem; }
+      .verify-box { margin: 1.5rem auto 0; padding: 1.2rem; }
+      .verify-input-area { flex-direction: column; }
+      .btn-verify { width: 100%; }
+      .result-section { padding: 0 4% 3rem; margin: 1.5rem auto; }
+      .details-grid { grid-template-columns: 1fr; }
+      .soil-bars { grid-template-columns: 1fr; }
+      .auth-banner { flex-direction: column; text-align: center; }
+      .auth-score { margin-left: 0; }
+      .verify-tabs { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Crop<span>ID</span></a>
+  <div class="nav-links">
+    <a href="supply-chain.html">Supply Chain</a>
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+  </div>
+</nav>
+
+<div class="verify-hero">
+  <h1>Is Your Crop <em>Genuine?</em></h1>
+  <p>Enter a Crop ID or QR-linked code and verify it against the live Flask backend record.</p>
+  <div class="verify-box">
+    <div class="verify-tabs">
+      <button class="verify-tab active" type="button">Enter Crop ID</button>
+      <button class="verify-tab" type="button" id="scanTab">📱 Scan QR</button>
+    </div>
+    <div id="cameraPermissionNotice" class="camera-permission-notice">
+      ⚠️ Camera permission required. Please enable camera access in your browser settings.
+    </div>
+    <div class="verify-input-area">
+      <input type="text" id="verifyInput" placeholder="e.g. CROP-56245690FE94"/>
+      <button class="btn-verify" type="button" id="verifyBtn">Verify</button>
+    </div>
+    <div class="verify-hint" id="verifyHint">Use the crop id created after registration, like the one shown on the success popup.</div>
+    
+    <!-- QR Scanner Section -->
+    <div id="qrScannerSection" style="display: none;">
+      <div class="qr-instructions">
+        <i>📷 Point your camera at the QR code</i>
+        Hold your device steady and align the QR code within the frame. The camera will automatically scan and verify the crop.
+      </div>
+      <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
+      <button class="btn-close-scanner" type="button" id="closeScannerBtn">Close Scanner</button>
+    </div>
+  </div>
+</div>
+
+<div class="result-section" id="resultSection">
+  <div class="auth-banner authentic" id="authBanner">
+    <div class="auth-icon" id="authIcon">OK</div>
+    <div>
+      <div class="auth-title" id="authTitle">Crop Verified - Authentic</div>
+      <div class="auth-sub" id="authSub">This crop record exists in CropID and matches the current verification request.</div>
+    </div>
+    <div class="auth-score" id="authScoreCard">
+      <div class="auth-score-num" id="authScoreNum">98</div>
+      <div class="auth-score-label">Trust Score</div>
+    </div>
+  </div>
+
+  <div class="details-grid">
+    <div class="detail-card">
+      <div class="detail-title">Crop Information</div>
+      <div class="detail-row"><span class="detail-label">Crop ID</span><span class="detail-value" id="cropIdValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Crop Name</span><span class="detail-value" id="cropNameValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Variety</span><span class="detail-value" id="cropVarietyValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Season</span><span class="detail-value" id="cropSeasonValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Farming Method</span><span class="detail-value" id="cropMethodValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Planting Date</span><span class="detail-value" id="cropPlantingValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Expected Harvest</span><span class="detail-value" id="cropHarvestValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Area</span><span class="detail-value" id="cropAreaValue">-</span></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-title">Farmer Details</div>
+      <div class="detail-row"><span class="detail-label">Farmer Name</span><span class="detail-value" id="farmerNameValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Farmer Ref</span><span class="detail-value" id="farmerRefValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Farm Name</span><span class="detail-value" id="farmNameValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Village</span><span class="detail-value" id="farmerVillageValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Taluka</span><span class="detail-value" id="farmerTalukaValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">District</span><span class="detail-value" id="farmerDistrictValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Land Area</span><span class="detail-value" id="farmerLandAreaValue">-</span></div>
+      <div class="detail-row"><span class="detail-label">Registered Since</span><span class="detail-value" id="farmerSinceValue">-</span></div>
+    </div>
+  </div>
+
+  <div class="soil-visual">
+    <div class="detail-title">Soil Intelligence Report</div>
+    <div class="soil-bars">
+      <div class="soil-bar-item">
+        <div class="soil-bar-label"><span>pH Level</span><span id="soilPhLabel">-</span></div>
+        <div class="soil-bar-track"><div class="soil-bar-fill" id="soilPhFill" style="width:0%;background:#52b788"></div></div>
+      </div>
+      <div class="soil-bar-item">
+        <div class="soil-bar-label"><span>Nitrogen</span><span id="soilNLabel">-</span></div>
+        <div class="soil-bar-track"><div class="soil-bar-fill" id="soilNFill" style="width:0%;background:#2d6a4f"></div></div>
+      </div>
+      <div class="soil-bar-item">
+        <div class="soil-bar-label"><span>Phosphorus</span><span id="soilPLabel">-</span></div>
+        <div class="soil-bar-track"><div class="soil-bar-fill" id="soilPFill" style="width:0%;background:#d4a017"></div></div>
+      </div>
+      <div class="soil-bar-item">
+        <div class="soil-bar-label"><span>Potassium</span><span id="soilKLabel">-</span></div>
+        <div class="soil-bar-track"><div class="soil-bar-fill" id="soilKFill" style="width:0%;background:#6b4226"></div></div>
+      </div>
+      <div class="soil-bar-item">
+        <div class="soil-bar-label"><span>Moisture</span><span id="soilMoistureLabel">-</span></div>
+        <div class="soil-bar-track"><div class="soil-bar-fill" id="soilMoistureFill" style="width:0%;background:#52b788"></div></div>
+      </div>
+      <div class="soil-bar-item">
+        <div class="soil-bar-label"><span>Soil Type</span><span id="soilTypeLabel">-</span></div>
+        <div class="soil-bar-track"><div class="soil-bar-fill" id="soilTypeFill" style="width:65%;background:#8b5e3c"></div></div>
+      </div>
+    </div>
+    <div class="soil-summary" id="soilSummary">Soil details will appear here after verification.</div>
+  </div>
+
+  <div class="journey-mini">
+    <div class="journey-mini-title">Supply Chain Journey</div>
+    <div class="mini-steps" id="journeySteps"></div>
+  </div>
+
+  <div class="dna-verify">
+    <div class="dna-verify-title">Crop DNA Fingerprint</div>
+    <div class="dna-verify-code" id="dnaVerifyCode">Awaiting verification</div>
+    <div class="dna-verify-check" id="dnaVerifyCheck"><span>OK</span> Verification summary will appear here once the crop is found.</div>
+  </div>
+
+  <button class="report-btn" type="button" onclick="window.print()">Download Verification Report</button>
+</div>
+
+<script src="api-client.js"></script>
+<script src="background.js"></script>
+<script>
+  function formatDate(value) {
+    if (!value) {
+      return '-';
+    }
+
+    try {
+      return new Date(value).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function formatText(value, fallback) {
+    return value || fallback || '-';
+  }
+
+  function updateBar(fillId, labelId, numericValue, maxValue, labelText) {
+    const fill = document.getElementById(fillId);
+    const label = document.getElementById(labelId);
+
+    label.textContent = labelText;
+
+    if (numericValue == null || Number.isNaN(numericValue)) {
+      fill.style.width = '0%';
+      return;
+    }
+
+    const percent = Math.max(0, Math.min(100, (numericValue / maxValue) * 100));
+    fill.style.width = `${percent}%`;
+  }
+
+  function setVerifyState(isLoading) {
+    const button = document.getElementById('verifyBtn');
+    const input = document.getElementById('verifyInput');
+    button.disabled = isLoading;
+    button.textContent = isLoading ? 'Verifying...' : 'Verify';
+    input.disabled = isLoading;
+  }
+
+  function setBannerSuccess(title, subtitle, score) {
+    const banner = document.getElementById('authBanner');
+    banner.className = 'auth-banner authentic';
+    document.getElementById('authIcon').textContent = 'OK';
+    document.getElementById('authTitle').textContent = title;
+    document.getElementById('authSub').textContent = subtitle;
+    document.getElementById('authScoreCard').style.display = 'block';
+    document.getElementById('authScoreNum').textContent = score;
+  }
+
+  function setBannerFailure(title, subtitle) {
+    const banner = document.getElementById('authBanner');
+    banner.className = 'auth-banner fake';
+    document.getElementById('authIcon').textContent = 'NO';
+    document.getElementById('authTitle').textContent = title;
+    document.getElementById('authSub').textContent = subtitle;
+    document.getElementById('authScoreCard').style.display = 'none';
+  }
+
+  function renderJourney(records) {
+    const container = document.getElementById('journeySteps');
+    container.innerHTML = '';
+
+    if (!records.length) {
+      container.innerHTML = '<div class="mini-step"><div class="mini-step-icon current">i</div><div class="mini-step-label">No public journey records yet</div><div class="mini-step-time">Create supply chain updates to see them here</div></div>';
+      return;
+    }
+
+    const stageIcons = {
+      Harvested: 'H',
+      Processed: 'P',
+      Packaged: 'PK',
+      Shipped: 'S',
+      Received: 'R',
+      Sold: 'C'
+    };
+
+    records.forEach((record, index) => {
+      const step = document.createElement('div');
+      step.className = 'mini-step';
+      step.innerHTML = `
+        <div class="mini-step-icon ${index === records.length - 1 ? 'current' : 'done'}">${stageIcons[record.stage] || 'i'}</div>
+        <div class="mini-step-label">${record.stage}</div>
+        <div class="mini-step-time">${formatDate(record.created_at)}</div>
+      `;
+      container.appendChild(step);
+
+      if (index < records.length - 1) {
+        const connector = document.createElement('div');
+        connector.className = 'mini-connector done';
+        container.appendChild(connector);
+      }
+    });
+  }
+
+  function buildFingerprint(crop) {
+    const seed = [
+      crop.crop_id_code,
+      crop.crop_type,
+      crop.variety || 'VAR',
+      crop.soil_type || 'SOIL',
+      crop.planting_date || 'DATE'
+    ].join('|').toUpperCase();
+
+    return seed
+      .replace(/[^A-Z0-9]/g, '')
+      .padEnd(48, 'X')
+      .match(/.{1,8}/g)
+      .join(' ');
+  }
+
+  function populateVerificationDetails(data, supplyChain) {
+    const crop = data.crop || {};
+    const farmer = data.farmer || {};
+
+    document.getElementById('cropIdValue').textContent = formatText(crop.crop_id_code);
+    document.getElementById('cropNameValue').textContent = formatText(crop.crop_type);
+    document.getElementById('cropVarietyValue').textContent = formatText(crop.variety);
+    document.getElementById('cropSeasonValue').textContent = formatText(crop.season, 'Not specified');
+    document.getElementById('cropMethodValue').textContent = crop.is_organic ? 'Organic' : 'Conventional';
+    document.getElementById('cropPlantingValue').textContent = formatDate(crop.planting_date);
+    document.getElementById('cropHarvestValue').textContent = formatDate(crop.expected_harvest_date);
+    document.getElementById('cropAreaValue').textContent = crop.area_planted ? `${crop.area_planted} Acres` : '-';
+
+    document.getElementById('farmerNameValue').textContent = formatText(farmer.name);
+    document.getElementById('farmerRefValue').textContent = formatText(farmer.reference);
+    document.getElementById('farmNameValue').textContent = formatText(farmer.farm_name);
+    document.getElementById('farmerVillageValue').textContent = formatText(farmer.village);
+    document.getElementById('farmerTalukaValue').textContent = formatText(farmer.taluka);
+    document.getElementById('farmerDistrictValue').textContent = formatText(farmer.district);
+    document.getElementById('farmerLandAreaValue').textContent = farmer.farm_size ? `${farmer.farm_size} Acres` : '-';
+    document.getElementById('farmerSinceValue').textContent = formatDate(farmer.registered_since);
+
+    updateBar('soilPhFill', 'soilPhLabel', crop.soil_ph != null ? crop.soil_ph - 4 : null, 5, crop.soil_ph != null ? `${crop.soil_ph} pH` : '-');
+    updateBar('soilNFill', 'soilNLabel', crop.nitrogen_level, 100, crop.nitrogen_level != null ? `${crop.nitrogen_level} kg/ha` : '-');
+    updateBar('soilPFill', 'soilPLabel', crop.phosphorus_level, 100, crop.phosphorus_level != null ? `${crop.phosphorus_level} kg/ha` : '-');
+    updateBar('soilKFill', 'soilKLabel', crop.potassium_level, 100, crop.potassium_level != null ? `${crop.potassium_level} kg/ha` : '-');
+    updateBar('soilMoistureFill', 'soilMoistureLabel', crop.moisture_level, 100, crop.moisture_level != null ? `${crop.moisture_level}%` : '-');
+
+    document.getElementById('soilTypeLabel').textContent = formatText(crop.soil_type);
+    document.getElementById('soilSummary').textContent = crop.soil_type
+      ? `Soil type ${crop.soil_type} with pH ${crop.soil_ph ?? '-'} and moisture ${crop.moisture_level ?? '-'}% supports ${crop.crop_type || 'this crop'} production.`
+      : 'Soil details are partially available for this crop.';
+
+    document.getElementById('dnaVerifyCode').textContent = buildFingerprint(crop);
+    document.getElementById('dnaVerifyCheck').innerHTML = `<span>OK</span> Crop record ${crop.crop_id_code} is present in the backend. ${supplyChain.records.length ? `Supply chain has ${supplyChain.records.length} public record(s).` : 'Supply chain updates have not been added yet.'}`;
+
+    renderJourney(supplyChain.records || []);
+  }
+
+  async function verifyCrop() {
+    const inputElement = document.getElementById('verifyInput');
+    const input = inputElement.value.trim().toUpperCase();
+    inputElement.value = input;
+
+    if (!input) {
+      alert('Please enter a Crop ID');
+      return;
+    }
+
+    setVerifyState(true);
+
+    try {
+      const cropData = await CropIdApi.request(`/crops/${encodeURIComponent(input)}/track`);
+      let supplyChainData = { records: [] };
+
+      try {
+        supplyChainData = await CropIdApi.request(`/supply-chain/${encodeURIComponent(input)}/public`);
+      } catch (error) {
+        supplyChainData = { records: [] };
+      }
+
+      setBannerSuccess(
+        'Crop Verified - Authentic',
+        'This crop record exists in the CropID backend and its public details were retrieved successfully.',
+        supplyChainData.records.length ? 98 : 92
+      );
+      populateVerificationDetails(cropData, supplyChainData);
+      document.getElementById('resultSection').classList.add('show');
+      document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+      setBannerFailure(
+        'Crop Not Found',
+        error.data?.message || 'This crop id is not available in the backend verification records.'
+      );
+      document.getElementById('resultSection').classList.add('show');
+      document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } finally {
+      setVerifyState(false);
+    }
+  }
+
+  function prefillLatestCrop() {
+    let latestCrop = null;
+
+    try {
+      latestCrop = JSON.parse(localStorage.getItem('latest_crop') || 'null');
+    } catch (error) {
+      latestCrop = null;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const cropIdFromUrl = params.get('cropId');
+    const suggestedCropId = cropIdFromUrl || latestCrop?.crop_id_code;
+
+    if (suggestedCropId) {
+      document.getElementById('verifyInput').value = suggestedCropId.toUpperCase();
+      document.getElementById('verifyHint').textContent = `Loaded crop: ${suggestedCropId.toUpperCase()}. Verifying...`;
+      // Auto-verify if we came from a redirect
+      setTimeout(verifyCrop, 500);
+    }
+  }
+
+  window.verifyCrop = verifyCrop;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    prefillLatestCrop();
+
+    let html5QrcodeScanner = null;
+    let scannerActive = false;
+
+    // Check camera permission on load
+    async function checkCameraPermission() {
+      try {
+        const permission = await navigator.permissions.query({ name: 'camera' });
+        if (permission.state === 'denied') {
+          document.getElementById('cameraPermissionNotice').classList.add('show');
+          return false;
+        }
+        return true;
+      } catch (e) {
+        // Permission API not supported on all browsers
+        return true;
+      }
+    }
+
+    async function startQRScanner() {
+      if (scannerActive) return;
+      
+      // Check camera permission
+      const hasPermission = await checkCameraPermission();
+      if (!hasPermission) {
+        alert('Camera permission is required to scan QR codes.');
+        return;
+      }
+
+      document.querySelector('.verify-tab.active').classList.remove('active');
+      document.getElementById('scanTab').classList.add('active');
+      
+      document.querySelector('.verify-input-area').style.display = 'none';
+      document.getElementById('qrScannerSection').style.display = 'block';
+
+      if (!html5QrcodeScanner) {
+        try {
+          html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", 
+            { 
+              fps: 10, 
+              qrbox: { width: 250, height: 250 },
+              aspectRatio: 1.0,
+              showTorchButtonIfSupported: true,
+              disableFlip: false
+            }, 
+            false
+          );
+          
+          html5QrcodeScanner.render(onQRCodeScanned, onQRCodeError);
+          scannerActive = true;
+        } catch (err) {
+          console.error("QR Scanner Error:", err);
+          alert('Unable to access camera. Please check your browser permissions.');
+          closeScannerUI();
+        }
+      }
+    }
+
+    function onQRCodeScanned(decodedText, decodedResult) {
+      console.log("QR Scanned:", decodedText);
+      
+      try {
+        // Try to parse as JSON first (from QR-Generator)
+        let batchId = null;
+        try {
+          const data = JSON.parse(decodedText);
+          batchId = data.batchId || data.crop_id_code || decodedText;
+        } catch (e) {
+          // If not JSON, use plain text
+          batchId = decodedText.trim();
+        }
+
+        if (batchId && batchId.length > 0) {
+          document.getElementById('verifyInput').value = batchId;
+          
+          // Stop scanner
+          if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+            scannerActive = false;
+          }
+          
+          // Switch back to input tab
+          closeScannerUI();
+          
+          // Auto-verify
+          setTimeout(verifyCrop, 300);
+        }
+      } catch (e) {
+        console.error("Error processing QR code:", e);
+      }
+    }
+
+    function onQRCodeError(errorMessage) {
+      // Ignore continuous scanning errors
+    }
+
+    function closeScannerUI() {
+      document.querySelector('.verify-input-area').style.display = 'flex';
+      document.getElementById('qrScannerSection').style.display = 'none';
+      document.querySelector('.verify-tab.active').classList.remove('active');
+      document.querySelector('.verify-tabs button:first-child').classList.add('active');
+      
+      if (html5QrcodeScanner) {
+        try {
+          html5QrcodeScanner.clear();
+        } catch (e) {
+          console.log("Scanner already cleared");
+        }
+        scannerActive = false;
+      }
+    }
+
+    // Scan Tab Click Handler
+    document.getElementById('scanTab').addEventListener('click', startQRScanner);
+
+    // Close Scanner Button Handler
+    document.getElementById('closeScannerBtn').addEventListener('click', closeScannerUI);
+
+    // Enter ID Tab Click Handler
+    document.querySelector('.verify-tabs button:first-child').addEventListener('click', (e) => {
+      closeScannerUI();
+    });
+
+    document.getElementById('verifyBtn').addEventListener('click', verifyCrop);
+
+    document.getElementById('verifyInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        verifyCrop();
+      }
+    });
+
+    // Handle page visibility to pause/resume scanner
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && html5QrcodeScanner && scannerActive) {
+        try {
+          html5QrcodeScanner.clear();
+          scannerActive = false;
+        } catch (e) {
+          console.log("Could not stop scanner");
+        }
+      }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (html5QrcodeScanner && scannerActive) {
+        try {
+          html5QrcodeScanner.clear();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    });
+  });
+</script>
+</body>
+</html>

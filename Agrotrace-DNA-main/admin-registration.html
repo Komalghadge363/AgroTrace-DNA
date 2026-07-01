@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Registration - CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="background.css"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a; --green-mid: #2d6a4f; --green-bright: #52b788;
+      --green-light: #b7e4c7; --gold: #d4a017; --white: #ffffff; --red: #e74c3c;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: #0a1f12; min-height: 100vh; }
+    nav { padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.15); backdrop-filter: blur(12px); position: relative; z-index: 10; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--green-light); text-decoration: none; }
+    .logo span { color: var(--gold); }
+    .nav-links { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .nav-links a { color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.88rem; }
+    .nav-links a:hover { color: var(--green-bright); }
+    .page-hero { padding: 2.8rem 5% 1.8rem; }
+    .page-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: var(--white); font-weight: 700; }
+    .page-hero p { color: rgba(255,255,255,0.65); margin-top: 0.5rem; font-size: 1rem; max-width: 720px; line-height: 1.6; }
+    .step-indicator { display: flex; gap: 0.5rem; margin-top: 1.5rem; align-items: center; flex-wrap: wrap; }
+    .step-dot { width: 32px; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.2); transition: background 0.3s; }
+    .step-dot.active { background: var(--green-bright); }
+    .step-dot.done { background: rgba(82,183,136,0.55); }
+    .step-label { color: rgba(255,255,255,0.55); font-size: 0.8rem; margin-left: 0.5rem; }
+    .form-container { max-width: 780px; margin: 0 auto; padding: 0 5% 4rem; }
+    .alert { display: none; margin-bottom: 1.2rem; padding: 0.95rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; }
+    .alert.show { display: block; }
+    .alert.success { background: rgba(82,183,136,0.12); border: 1px solid rgba(82,183,136,0.3); color: #b7f1d4; }
+    .alert.error { background: rgba(231,76,60,0.12); border: 1px solid rgba(231,76,60,0.3); color: #ff9f96; }
+    .form-section { background: rgba(255,255,255,0.06); border: 1px solid rgba(82,183,136,0.2); border-radius: 18px; padding: 2rem; margin-bottom: 1.5rem; display: none; backdrop-filter: blur(10px); }
+    .form-section.active { display: block; animation: fadeIn 0.35s ease; }
+    .section-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid rgba(82,183,136,0.2); }
+    .section-icon { width: 42px; height: 42px; background: rgba(82,183,136,0.2); border: 1px solid rgba(82,183,136,0.25); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--green-light); font-size: 1rem; font-weight: 700; }
+    .section-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--white); }
+    .section-header p { font-size: 0.84rem; color: rgba(255,255,255,0.52); margin-top: 0.2rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 0.85rem; font-weight: 500; color: rgba(255,255,255,0.75); }
+    label .req { color: var(--red); margin-left: 2px; }
+    input, select, textarea { padding: 0.75rem 1rem; border: 1.5px solid rgba(82,183,136,0.3); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; background: rgba(255,255,255,0.08); color: var(--white); transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; }
+    input::placeholder, textarea::placeholder { color: rgba(255,255,255,0.35); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--green-bright); box-shadow: 0 0 0 3px rgba(82,183,136,0.15); background: rgba(255,255,255,0.12); }
+    input.error, select.error { border-color: var(--red); }
+    .error-msg { color: #ff9f96; font-size: 0.78rem; display: none; }
+    .error-msg.show { display: block; }
+    .hint { font-size: 0.78rem; color: rgba(255,255,255,0.48); line-height: 1.5; }
+    .security-notice { background: rgba(212,160,23,0.1); border: 1px solid rgba(212,160,23,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; color: #f4d98b; font-size: 0.88rem; line-height: 1.6; }
+    .nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; gap: 1rem; }
+    .btn-back, .btn-next, .btn-submit, .btn-secondary { border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; padding: 0.8rem 1.5rem; text-decoration: none; text-align: center; }
+    .btn-back { background: transparent; border: 1.5px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.72); }
+    .btn-back:hover { border-color: var(--green-bright); color: var(--green-bright); }
+    .btn-next { background: var(--green-deep); color: #fff; border: none; }
+    .btn-next:hover { background: var(--green-mid); transform: translateY(-1px); }
+    .btn-submit { background: var(--green-bright); color: var(--green-deep); border: none; font-weight: 700; }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(82,183,136,0.35); }
+    .btn-submit:disabled { background: #4e5d56; color: #b8c0bb; cursor: not-allowed; box-shadow: none; transform: none; }
+    .btn-secondary { background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.78); }
+    .success-screen { display: none; text-align: center; padding: 3rem 2rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(82,183,136,0.2); border-radius: 18px; backdrop-filter: blur(10px); }
+    .success-screen.show { display: block; animation: fadeIn 0.4s ease; }
+    .success-icon { width: 80px; height: 80px; background: var(--green-bright); color: var(--green-deep); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; margin: 0 auto 1.5rem; }
+    .success-screen h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--white); }
+    .success-screen p { color: rgba(255,255,255,0.6); margin-top: 0.6rem; line-height: 1.6; }
+    .farmer-id-display { background: rgba(26,60,42,0.9); color: var(--green-bright); padding: 1rem 2rem; border-radius: 10px; font-size: 1.2rem; font-family: monospace; margin: 1.5rem auto; display: inline-block; letter-spacing: 2px; }
+    .success-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 4%; } .page-hero { padding: 2rem 4% 1.4rem; } .page-hero h1 { font-size: 1.9rem; }
+      .form-container { padding: 0 4% 3rem; } .form-grid { grid-template-columns: 1fr; } .form-group.full { grid-column: 1; }
+      .nav-buttons { flex-direction: column; } .btn-back, .btn-next, .btn-submit, .btn-secondary { width: 100%; }
+      .success-actions { flex-direction: column; } .success-actions a { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Crop<span>ID</span></a>
+  <div class="nav-links">
+    <a href="farmer-registration.html">Register as Farmer</a>
+    <a href="distributor-registration.html">Register as Distributor</a>
+    <a href="login.html">Login</a>
+    <a href="index.html">Home</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Admin Registration</h1>
+  <p>Create a CropID admin account to access the dashboard, manage farmer records, view analytics, and oversee crop traceability.</p>
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <span class="step-label" id="stepLabel">Step 1 of 2 - Personal and account details</span>
+  </div>
+</div>
+
+<div class="form-container">
+  <div class="alert" id="alertBox"></div>
+
+  <div class="form-section active" id="step1">
+    <div class="section-header">
+      <div class="section-icon">1</div>
+      <div>
+        <h2>Personal & Account Details</h2>
+        <p>Create the backend account you will use for admin sign-ins.</p>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="fullName" placeholder="e.g. Dr. Priya Kulkarni"/>
+        <span class="error-msg" id="err-fullName">Please enter your full name</span>
+      </div>
+      <div class="form-group">
+        <label>Username <span class="req">*</span></label>
+        <input type="text" id="username" placeholder="Choose a unique username"/>
+        <span class="error-msg" id="err-username">Username must be at least 3 characters</span>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="admin@example.com"/>
+        <span class="error-msg" id="err-email">Enter a valid email address</span>
+      </div>
+      <div class="form-group">
+        <label>Mobile Number <span class="req">*</span></label>
+        <input type="tel" id="mobile" placeholder="10-digit mobile number" maxlength="10"/>
+        <span class="error-msg" id="err-mobile">Enter a valid 10-digit mobile number</span>
+      </div>
+      <div class="form-group">
+        <label>Password <span class="req">*</span></label>
+        <input type="password" id="password" placeholder="Minimum 8 characters"/>
+        <span class="error-msg" id="err-password">Password must be at least 8 characters</span>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password <span class="req">*</span></label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter your password"/>
+        <span class="error-msg" id="err-confirmPassword">Passwords do not match</span>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <a href="index.html" class="btn-back">Cancel</a>
+      <button class="btn-next" type="button" onclick="goToStep(2)">Next: Admin Verification -&gt;</button>
+    </div>
+  </div>
+
+  <div class="form-section" id="step2">
+    <div class="section-header">
+      <div class="section-icon">2</div>
+      <div>
+        <h2>Admin Verification</h2>
+        <p>Provide your department details and access code for admin account creation.</p>
+      </div>
+    </div>
+
+    <div class="security-notice">
+      ⚠️ Admin accounts require a valid access code provided by the system administrator. This prevents unauthorized admin registrations.
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Department / Organization <span class="req">*</span></label>
+        <input type="text" id="department" placeholder="e.g. Agriculture Department"/>
+        <span class="error-msg" id="err-department">Please enter your department</span>
+      </div>
+      <div class="form-group">
+        <label>Designation / Role Title <span class="req">*</span></label>
+        <input type="text" id="designation" placeholder="e.g. District Agriculture Officer"/>
+        <span class="error-msg" id="err-designation">Please enter your designation</span>
+      </div>
+      <div class="form-group">
+        <label>Employee / Staff ID</label>
+        <input type="text" id="employeeId" placeholder="e.g. EMP-2025-001"/>
+      </div>
+      <div class="form-group">
+        <label>Jurisdiction Level <span class="req">*</span></label>
+        <select id="jurisdiction">
+          <option value="">Select Level</option>
+          <option>State</option>
+          <option>District</option>
+          <option>Taluka</option>
+          <option>Block</option>
+        </select>
+        <span class="error-msg" id="err-jurisdiction">Please select jurisdiction level</span>
+      </div>
+      <div class="form-group full">
+        <label>Jurisdiction Area(s)</label>
+        <input type="text" id="jurisdictionArea" placeholder="e.g. Aurangabad, Jalna, Beed"/>
+        <span class="hint">Comma-separated list of areas under your jurisdiction</span>
+      </div>
+      <div class="form-group full">
+        <label>Admin Access Code <span class="req">*</span></label>
+        <input type="password" id="accessCode" placeholder="Enter the admin access code"/>
+        <span class="error-msg" id="err-accessCode">A valid admin access code is required</span>
+        <span class="hint">Contact your system administrator if you don't have this code. Default for development: CROPID-ADMIN-2025</span>
+      </div>
+      <div class="form-group full">
+        <label>
+          <input type="checkbox" id="terms" style="width:16px;height:16px;margin-right:0.5rem;accent-color:var(--green-mid)"/>
+          I confirm I am authorized to create an admin account in the CropID system.
+        </label>
+        <span class="error-msg" id="err-terms">Please accept the confirmation</span>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn-back" type="button" onclick="goToStep(1)">&lt;- Back</button>
+      <button class="btn-submit" type="button" id="submitBtn" onclick="submitRegistration()">Create Admin Account</button>
+    </div>
+  </div>
+
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">OK</div>
+    <h2>Admin Account Created</h2>
+    <p>Your CropID admin account is ready. You can now access the admin dashboard.</p>
+    <div class="farmer-id-display" id="generatedID">ADM-000000</div>
+    <p id="successSubtext">Account reference generated from your backend user id.</p>
+    <div class="success-actions">
+      <a href="admin-dashboard.html" class="btn-submit">Open Admin Dashboard -&gt;</a>
+      <a href="login.html" class="btn-secondary" id="loginLink">Open Login Page</a>
+      <a href="index.html" class="btn-back">Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script src="api-client.js"></script>
+<script src="background.js"></script>
+<script>
+  let currentStep = 1;
+
+  function showAlert(type, message) {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.className = `alert show ${type}`;
+    alertBox.textContent = message;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function clearAlert() {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.className = 'alert';
+    alertBox.textContent = '';
+  }
+
+  function goToStep(step) {
+    if (step > currentStep && !validateStep(currentStep)) return;
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    currentStep = step;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    updateIndicator();
+    clearAlert();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateIndicator() {
+    const labels = ['', 'Personal and account details', 'Admin verification'];
+    for (let i = 1; i <= 2; i++) {
+      const dot = document.getElementById(`dot${i}`);
+      dot.className = 'step-dot';
+      if (i < currentStep) dot.classList.add('done');
+      else if (i === currentStep) dot.classList.add('active');
+    }
+    document.getElementById('stepLabel').textContent = `Step ${currentStep} of 2 - ${labels[currentStep]}`;
+  }
+
+  function setFieldState(fieldId, errorId, isValid) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+    if (isValid) { field.classList.remove('error'); error.classList.remove('show'); return true; }
+    field.classList.add('error'); error.classList.add('show'); return false;
+  }
+
+  function validateStep(step) {
+    let valid = true;
+    if (step === 1) {
+      valid = setFieldState('fullName', 'err-fullName', document.getElementById('fullName').value.trim().length > 2) && valid;
+      valid = setFieldState('username', 'err-username', document.getElementById('username').value.trim().length >= 3) && valid;
+      valid = setFieldState('email', 'err-email', /\S+@\S+\.\S+/.test(document.getElementById('email').value.trim())) && valid;
+      valid = setFieldState('mobile', 'err-mobile', /^\d{10}$/.test(document.getElementById('mobile').value.trim())) && valid;
+      valid = setFieldState('password', 'err-password', document.getElementById('password').value.length >= 8) && valid;
+      valid = setFieldState('confirmPassword', 'err-confirmPassword',
+        document.getElementById('confirmPassword').value === document.getElementById('password').value &&
+        document.getElementById('confirmPassword').value.length >= 8
+      ) && valid;
+    }
+    if (step === 2) {
+      valid = setFieldState('department', 'err-department', document.getElementById('department').value.trim().length > 1) && valid;
+      valid = setFieldState('designation', 'err-designation', document.getElementById('designation').value.trim().length > 1) && valid;
+      valid = setFieldState('jurisdiction', 'err-jurisdiction', document.getElementById('jurisdiction').value !== '') && valid;
+      valid = setFieldState('accessCode', 'err-accessCode', document.getElementById('accessCode').value.trim().length > 0) && valid;
+      const terms = document.getElementById('terms');
+      const termsError = document.getElementById('err-terms');
+      if (!terms.checked) { termsError.classList.add('show'); valid = false; } else { termsError.classList.remove('show'); }
+    }
+    if (!valid) showAlert('error', 'Please complete the highlighted fields before moving ahead.');
+    return valid;
+  }
+
+  function formatReference(userId) { return `ADM-${String(userId).padStart(6, '0')}`; }
+
+  function setSubmitState(isSubmitting) {
+    const button = document.getElementById('submitBtn');
+    button.disabled = isSubmitting;
+    button.textContent = isSubmitting ? 'Creating account...' : 'Create Admin Account';
+  }
+
+  async function submitRegistration() {
+    if (!validateStep(2)) return;
+    setSubmitState(true);
+    clearAlert();
+
+    const registrationData = {
+      username: document.getElementById('username').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value,
+      full_name: document.getElementById('fullName').value.trim(),
+      phone: document.getElementById('mobile').value.trim(),
+      role: 'admin',
+      department: document.getElementById('department').value.trim(),
+      designation: document.getElementById('designation').value.trim(),
+      employee_id: document.getElementById('employeeId').value.trim() || null,
+      admin_access_code: document.getElementById('accessCode').value.trim()
+    };
+
+    try {
+      const registerResult = await CropIdApi.request('/auth/register', { method: 'POST', body: JSON.stringify(registrationData) });
+      let loginResult = null;
+      try {
+        loginResult = await CropIdApi.request('/auth/login', { method: 'POST', body: JSON.stringify({ username: registrationData.username, password: registrationData.password }) });
+        CropIdApi.saveSession(loginResult);
+      } catch (e) { showAlert('success', 'Account created. Use the login page to sign in.'); }
+
+      const user = (loginResult && loginResult.user) || registerResult.user;
+      const reference = formatReference(user.id);
+
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('successScreen').classList.add('show');
+      document.getElementById('generatedID').textContent = reference;
+      document.getElementById('loginLink').href = `login.html?registered=1&username=${encodeURIComponent(user.username)}`;
+
+      if (loginResult) {
+        document.getElementById('successSubtext').textContent = `Signed in as ${user.username}. Redirecting to Admin Dashboard...`;
+        setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 3000);
+      }
+      clearAlert();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      const fieldErrors = error.data?.errors;
+      if (fieldErrors?.username) {
+        document.getElementById('err-username').textContent = fieldErrors.username.join(', ');
+        document.getElementById('err-username').classList.add('show');
+        document.getElementById('username').classList.add('error');
+        goToStep(1);
+      }
+      showAlert('error', error.data?.message || 'Registration failed. Please review the form.');
+    } finally { setSubmitState(false); }
+  }
+</script>
+</body>
+</html>

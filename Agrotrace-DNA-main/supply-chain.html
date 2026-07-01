@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Supply Chain Tracker - CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="background.css"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a;
+      --green-mid: #2d6a4f;
+      --green-bright: #52b788;
+      --green-light: #b7e4c7;
+      --gold: #d4a017;
+      --red: #e74c3c;
+      --white: #ffffff;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a1f12;
+      min-height: 100vh;
+      color: #fff;
+    }
+    nav {
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-light);
+      text-decoration: none;
+    }
+    .logo span { color: var(--gold); }
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.62);
+      text-decoration: none;
+      font-size: 0.88rem;
+      margin-left: 1.2rem;
+    }
+    .nav-links a:hover { color: var(--green-bright); }
+    .page-hero {
+      padding: 3.5rem 5% 2.5rem;
+      text-align: center;
+    }
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.6rem;
+      color: #fff;
+    }
+    .page-hero h1 em {
+      color: var(--green-bright);
+      font-style: normal;
+    }
+    .page-hero p {
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 0.8rem;
+      font-size: 1.02rem;
+      line-height: 1.6;
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .search-section {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 5% 1rem;
+    }
+    .search-card,
+    .journey-card,
+    .add-scan-card,
+    .summary-card,
+    .progress-card,
+    .guide-card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      border: 1px solid rgba(82, 183, 136, 0.2);
+      backdrop-filter: blur(10px);
+    }
+    .search-card {
+      padding: 1.2rem;
+    }
+    .search-bar {
+      display: flex;
+      gap: 0.6rem;
+    }
+    .search-bar input,
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.94rem;
+    }
+    .search-bar input::placeholder,
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: rgba(255, 255, 255, 0.38);
+    }
+    .search-bar input:focus,
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--green-bright);
+    }
+    .search-bar button,
+    .btn-add {
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.94rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .search-bar button {
+      background: var(--green-bright);
+      color: var(--green-deep);
+      padding: 0.85rem 1.4rem;
+      white-space: nowrap;
+    }
+    .search-bar button:hover,
+    .btn-add:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(82, 183, 136, 0.35);
+    }
+    .search-hint {
+      margin-top: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+    .main {
+      max-width: 1080px;
+      margin: 1.2rem auto 0;
+      padding: 0 5% 4rem;
+      display: grid;
+      grid-template-columns: 1.25fr 0.85fr;
+      gap: 1.5rem;
+    }
+    .journey-card,
+    .add-scan-card,
+    .summary-card,
+    .progress-card,
+    .guide-card {
+      padding: 1.5rem;
+    }
+    .journey-card { margin-bottom: 1.5rem; }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .journey-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      color: var(--green-deep);
+      background: var(--green-light);
+      border-radius: 999px;
+      padding: 0.3rem 0.8rem;
+      white-space: nowrap;
+    }
+    .notice {
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .notice.info {
+      background: rgba(82, 183, 136, 0.12);
+      color: var(--green-light);
+      border-color: rgba(82, 183, 136, 0.22);
+    }
+    .notice.warn {
+      background: rgba(212, 160, 23, 0.12);
+      color: #f4d98b;
+      border-color: rgba(212, 160, 23, 0.28);
+    }
+    .notice.error {
+      background: rgba(231, 76, 60, 0.12);
+      color: #f4b1a8;
+      border-color: rgba(231, 76, 60, 0.24);
+    }
+    .timeline {
+      position: relative;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 24px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(82, 183, 136, 0.75), rgba(255, 255, 255, 0.12));
+    }
+    .timeline-item {
+      position: relative;
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+      z-index: 1;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+    }
+    .timeline-content {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(82, 183, 136, 0.15);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .timeline-content.active-stage {
+      border-color: rgba(212, 160, 23, 0.45);
+      background: rgba(212, 160, 23, 0.08);
+    }
+    .timeline-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 0.55rem;
+    }
+    .stage-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .stage-time {
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.48);
+      text-align: right;
+    }
+    .stage-location,
+    .stage-handler,
+    .stage-note {
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+    .stage-location { color: rgba(255, 255, 255, 0.72); }
+    .stage-handler { color: rgba(255, 255, 255, 0.58); margin-top: 0.2rem; }
+    .stage-note { color: rgba(255, 255, 255, 0.52); margin-top: 0.45rem; }
+    .stage-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .metric {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.76rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .status-pill {
+      display: inline-block;
+      margin-top: 0.7rem;
+      border-radius: 999px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .status-done {
+      background: rgba(82, 183, 136, 0.14);
+      color: var(--green-light);
+    }
+    .status-current {
+      background: rgba(212, 160, 23, 0.16);
+      color: #f4d98b;
+    }
+    .empty-state {
+      padding: 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.9rem;
+    }
+    .form-group { margin-bottom: 0.9rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.72);
+    }
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+    .btn-add {
+      width: 100%;
+      background: var(--green-bright);
+      color: var(--green-deep);
+      padding: 0.95rem 1rem;
+      margin-top: 0.35rem;
+    }
+    .btn-add:disabled,
+    .search-bar button:disabled {
+      background: #4e5d56;
+      color: #b8c0bb;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .summary-card { margin-bottom: 1.5rem; }
+    .summary-title,
+    .progress-title,
+    .guide-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--green-light);
+      margin-bottom: 1rem;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.82rem;
+    }
+    .summary-value {
+      color: #fff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: right;
+    }
+    .stage-dots {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.7rem;
+    }
+    .stage-dot-item {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .stage-dot-item.done { background: var(--green-bright); }
+    .stage-dot-item.active { background: var(--gold); }
+    .stage-labels {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+    }
+    .stage-label-text {
+      flex: 1;
+      font-size: 0.66rem;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.45);
+    }
+    .guide-card p {
+      color: rgba(255, 255, 255, 0.62);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 0.8rem;
+    }
+    .guide-card p:last-child { margin-bottom: 0; }
+    @media (max-width: 1024px) {
+      .main { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 4%; }
+      .page-hero { padding: 2.4rem 4% 1.8rem; }
+      .page-hero h1 { font-size: 1.9rem; }
+      .page-hero p { font-size: 0.92rem; }
+      .search-section { padding: 0 4% 1rem; }
+      .search-bar { flex-direction: column; }
+      .main { padding: 0 4% 3rem; }
+      .card-title { flex-direction: column; align-items: flex-start; }
+      .form-grid { grid-template-columns: 1fr; }
+      .timeline::before { left: 20px; }
+      .timeline-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 0.72rem;
+      }
+      .timeline-head { flex-direction: column; }
+      .stage-time { text-align: left; }
+      .stage-label-text { font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Crop<span>ID</span></a>
+  <div class="nav-links">
+    <a href="consumer-verification.html">Consumer Verify</a>
+    <a href="QR-Generator.html">QR Generator</a>
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Supply Chain <em>Tracker</em></h1>
+  <p>Track a crop from registration to sale, and record each public handoff so the consumer verification page can show a real journey.</p>
+</div>
+
+<div class="search-section">
+  <div class="search-card">
+    <div class="search-bar">
+      <input type="text" id="batchSearch" placeholder="Enter Crop ID, for example CROP-C1A4C336E6B7"/>
+      <button type="button" id="trackBtn">Track</button>
+    </div>
+    <div class="search-hint" id="searchHint">Use the crop id created after crop registration. The latest saved crop will be suggested automatically when available.</div>
+  </div>
+</div>
+
+<div class="main">
+  <div>
+    <div class="journey-card">
+      <div class="card-title">
+        <span>Farm-to-Fork Journey</span>
+        <span class="journey-badge" id="batchBadge">NO-CROP</span>
+      </div>
+      <div class="notice info" id="journeyNotice">Load a crop id to see its live tracking history.</div>
+      <div class="timeline" id="timeline">
+        <div class="empty-state">No crop loaded yet. Search a crop id first, then you can add handoff records from this page.</div>
+      </div>
+    </div>
+
+    <div class="add-scan-card">
+      <div class="card-title">
+        <span>Record New Handoff</span>
+      </div>
+      <div class="notice warn" id="authNotice">Sign in as the same farmer account that created the crop before adding supply chain records.</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label for="scanBatchId">Crop ID</label>
+          <input type="text" id="scanBatchId" placeholder="CROP-C1A4C336E6B7"/>
+        </div>
+        <div class="form-group">
+          <label for="scanStage">Stage</label>
+          <select id="scanStage">
+            <option value="Harvested">Harvested</option>
+            <option value="Processed">Processed</option>
+            <option value="Packaged">Packaged</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Received">Received</option>
+            <option value="Sold">Sold</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="scanQuality">Quality Status</label>
+          <select id="scanQuality">
+            <option value="">Optional</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="scanHandler">Handler Name</label>
+          <input type="text" id="scanHandler" placeholder="e.g. Aurangabad APMC"/>
+        </div>
+        <div class="form-group">
+          <label for="scanRole">Handler Role</label>
+          <input type="text" id="scanRole" placeholder="e.g. Market Operator"/>
+        </div>
+        <div class="form-group full">
+          <label for="scanLocation">Location</label>
+          <input type="text" id="scanLocation" placeholder="City, district or exact handoff point"/>
+        </div>
+        <div class="form-group">
+          <label for="scanTemp">Temperature (C)</label>
+          <input type="number" id="scanTemp" step="0.1" placeholder="Optional"/>
+        </div>
+        <div class="form-group">
+          <label for="scanHumidity">Humidity (%)</label>
+          <input type="number" id="scanHumidity" step="0.1" placeholder="Optional"/>
+        </div>
+        <div class="form-group full">
+          <label for="scanNotes">Notes</label>
+          <textarea id="scanNotes" placeholder="Add observations, shipment notes, or any public remark for this stage."></textarea>
+        </div>
+      </div>
+      <button class="btn-add" type="button" id="addScanBtn">Save Supply Chain Record</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="summary-card">
+      <div class="summary-title">Crop Summary</div>
+      <div class="summary-row"><span class="summary-label">Crop ID</span><span class="summary-value" id="summaryCropId">-</span></div>
+      <div class="summary-row"><span class="summary-label">Crop</span><span class="summary-value" id="summaryCropType">-</span></div>
+      <div class="summary-row"><span class="summary-label">Farmer</span><span class="summary-value" id="summaryFarmer">-</span></div>
+      <div class="summary-row"><span class="summary-label">Origin</span><span class="summary-value" id="summaryOrigin">-</span></div>
+      <div class="summary-row"><span class="summary-label">Planting Date</span><span class="summary-value" id="summaryPlanting">-</span></div>
+      <div class="summary-row"><span class="summary-label">Expected Harvest</span><span class="summary-value" id="summaryHarvest">-</span></div>
+      <div class="summary-row"><span class="summary-label">Current Stage</span><span class="summary-value" id="summaryCurrentStage">-</span></div>
+      <div class="summary-row"><span class="summary-label">Total Records</span><span class="summary-value" id="summaryRecordCount">0</span></div>
+      <div class="summary-row"><span class="summary-label">Last Update</span><span class="summary-value" id="summaryLastUpdate">-</span></div>
+    </div>
+
+    <div class="progress-card">
+      <div class="progress-title">Journey Progress</div>
+      <div class="stage-dots" id="progressDots"></div>
+      <div class="stage-labels" id="progressLabels"></div>
+    </div>
+
+    <div class="guide-card">
+      <div class="guide-title">How This Connects</div>
+      <p>This page writes to the Flask backend using authenticated supply chain records.</p>
+      <p>After you save a handoff here, open the consumer verification page with the same crop id and the journey section will show those public steps.</p>
+    </div>
+  </div>
+</div>
+
+<script src="api-client.js"></script>
+<script src="background.js"></script>
+<script>
+  const STAGE_ORDER = ['Harvested', 'Processed', 'Packaged', 'Shipped', 'Received', 'Sold'];
+  const STAGE_META = {
+    Registered: { badge: 'REG', color: '#2d6a4f', label: 'Crop Registered' },
+    Harvested: { badge: 'HV', color: '#3f8f68', label: 'Harvested' },
+    Processed: { badge: 'PR', color: '#6b4226', label: 'Processed' },
+    Packaged: { badge: 'PK', color: '#7c5f2d', label: 'Packaged' },
+    Shipped: { badge: 'SH', color: '#3a7ebf', label: 'Shipped' },
+    Received: { badge: 'RC', color: '#8367c7', label: 'Received' },
+    Sold: { badge: 'SD', color: '#52b788', label: 'Sold' }
+  };
+
+  let activeCrop = null;
+  let activeFarmer = null;
+  let activeSupply = { records: [] };
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDate(value) {
+    if (!value) {
+      return '-';
+    }
+
+    try {
+      return new Date(value).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function formatDateTime(value) {
+    if (!value) {
+      return '-';
+    }
+
+    try {
+      return new Date(value).toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return value;
+    }
+  }
+
+  function textOrDash(value) {
+    return value || '-';
+  }
+
+  function setNotice(message, tone) {
+    const notice = document.getElementById('journeyNotice');
+    notice.className = `notice ${tone}`;
+    notice.textContent = message;
+  }
+
+  function setButtonLoading(buttonId, isLoading, loadingText, idleText) {
+    const button = document.getElementById(buttonId);
+    button.disabled = isLoading;
+    button.textContent = isLoading ? loadingText : idleText;
+  }
+
+  function updateSearchFields(cropId) {
+    if (!cropId) {
+      return;
+    }
+
+    document.getElementById('batchSearch').value = cropId;
+    document.getElementById('scanBatchId').value = cropId;
+    document.getElementById('batchBadge').textContent = cropId;
+  }
+
+  function renderProgress(currentStage) {
+    const dots = document.getElementById('progressDots');
+    const labels = document.getElementById('progressLabels');
+    dots.innerHTML = '';
+    labels.innerHTML = '';
+
+    const activeIndex = currentStage ? STAGE_ORDER.indexOf(currentStage) : -1;
+
+    STAGE_ORDER.forEach((stage, index) => {
+      const dot = document.createElement('div');
+      dot.className = 'stage-dot-item';
+
+      if (activeIndex >= 0 && index < activeIndex) {
+        dot.classList.add('done');
+      } else if (activeIndex >= 0 && index === activeIndex) {
+        dot.classList.add('active');
+      }
+
+      dots.appendChild(dot);
+
+      const label = document.createElement('span');
+      label.className = 'stage-label-text';
+      label.textContent = stage.replace('ed', '');
+      labels.appendChild(label);
+    });
+  }
+
+  function updateSummary(crop, farmer, supplyData) {
+    const lastRecord = supplyData.records[supplyData.records.length - 1] || null;
+    const origin = [farmer?.village, farmer?.district].filter(Boolean).join(', ');
+
+    document.getElementById('summaryCropId').textContent = textOrDash(crop?.crop_id_code);
+    document.getElementById('summaryCropType').textContent = textOrDash(crop?.crop_type);
+    document.getElementById('summaryFarmer').textContent = textOrDash(farmer?.name);
+    document.getElementById('summaryOrigin').textContent = textOrDash(origin);
+    document.getElementById('summaryPlanting').textContent = formatDate(crop?.planting_date);
+    document.getElementById('summaryHarvest').textContent = formatDate(crop?.expected_harvest_date);
+    document.getElementById('summaryCurrentStage').textContent = lastRecord?.stage || 'Registered';
+    document.getElementById('summaryRecordCount').textContent = String(supplyData.records.length);
+    document.getElementById('summaryLastUpdate').textContent = lastRecord ? formatDateTime(lastRecord.created_at) : formatDateTime(crop?.created_at);
+    renderProgress(lastRecord?.stage || null);
+  }
+
+  function renderTimeline(crop, farmer, supplyData) {
+    const timeline = document.getElementById('timeline');
+    const origin = [farmer?.village, farmer?.district].filter(Boolean).join(', ');
+    const items = [{
+      stage: 'Registered',
+      location: origin || crop?.soil_type || 'Origin not available',
+      handler_name: farmer?.name || 'Farmer',
+      handler_role: 'Creator',
+      notes: `Crop ${crop?.crop_id_code || ''} was created in the CropID backend.`,
+      created_at: crop?.created_at || crop?.planting_date,
+      temperature: null,
+      humidity: null,
+      quality_status: crop?.health_status || null
+    }].concat(supplyData.records || []);
+
+    if (!items.length) {
+      timeline.innerHTML = '<div class="empty-state">No timeline items are available for this crop yet.</div>';
+      return;
+    }
+
+    timeline.innerHTML = items.map((item, index) => {
+      const meta = STAGE_META[item.stage] || STAGE_META.Processed;
+      const isCurrent = index === items.length - 1;
+      const metricParts = [];
+
+      if (item.temperature != null && item.temperature !== '') {
+        metricParts.push(`<span class="metric">Temp: ${escapeHtml(item.temperature)} C</span>`);
+      }
+      if (item.humidity != null && item.humidity !== '') {
+        metricParts.push(`<span class="metric">Humidity: ${escapeHtml(item.humidity)}%</span>`);
+      }
+      if (item.quality_status) {
+        metricParts.push(`<span class="metric">Quality: ${escapeHtml(item.quality_status)}</span>`);
+      }
+
+      const handlerText = [item.handler_name, item.handler_role].filter(Boolean).join(' - ');
+
+      return `
+        <div class="timeline-item">
+          <div class="timeline-icon" style="background:${meta.color}">${meta.badge}</div>
+          <div class="timeline-content ${isCurrent ? 'active-stage' : ''}">
+            <div class="timeline-head">
+              <div class="stage-name">${escapeHtml(meta.label)}</div>
+              <div class="stage-time">${escapeHtml(formatDateTime(item.created_at))}</div>
+            </div>
+            <div class="stage-location">${escapeHtml(item.location || 'Location not provided')}</div>
+            <div class="stage-handler">${escapeHtml(handlerText || 'Handler not provided')}</div>
+            <div class="stage-note">${escapeHtml(item.notes || 'No public note added for this stage.')}</div>
+            <div class="stage-metrics">${metricParts.join('')}</div>
+            <span class="status-pill ${isCurrent ? 'status-current' : 'status-done'}">${isCurrent ? 'Current stage' : 'Completed'}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function loadBatch() {
+    const cropId = document.getElementById('batchSearch').value.trim().toUpperCase();
+    document.getElementById('batchSearch').value = cropId;
+
+    if (!cropId) {
+      alert('Please enter a Crop ID first.');
+      return;
+    }
+
+    setButtonLoading('trackBtn', true, 'Loading...', 'Track');
+    updateSearchFields(cropId);
+    setNotice('Loading crop and public supply chain details from the backend.', 'info');
+
+    try {
+      const cropData = await CropIdApi.request(`/crops/${encodeURIComponent(cropId)}/track`);
+      let supplyData = { records: [] };
+
+      try {
+        supplyData = await CropIdApi.request(`/supply-chain/${encodeURIComponent(cropId)}/public`);
+      } catch (error) {
+        supplyData = { records: [] };
+      }
+
+      activeCrop = cropData.crop || null;
+      activeFarmer = cropData.farmer || null;
+      activeSupply = supplyData || { records: [] };
+
+      updateSummary(activeCrop, activeFarmer, activeSupply);
+      renderTimeline(activeCrop, activeFarmer, activeSupply);
+      setNotice(`Loaded ${cropId}. Public records found: ${activeSupply.records.length}.`, 'info');
+      history.replaceState(null, '', `supply-chain.html?cropId=${encodeURIComponent(cropId)}`);
+    } catch (error) {
+      activeCrop = null;
+      activeFarmer = null;
+      activeSupply = { records: [] };
+      renderProgress(null);
+      document.getElementById('timeline').innerHTML = '<div class="empty-state">This crop id could not be loaded from the backend. Check the code and try again.</div>';
+      updateSummary(null, null, { records: [] });
+      setNotice(error.data?.message || 'Crop not found in the backend.', 'error');
+    } finally {
+      setButtonLoading('trackBtn', false, 'Loading...', 'Track');
+    }
+  }
+
+  function getSuggestedCropId() {
+    const params = new URLSearchParams(window.location.search);
+    const cropIdFromUrl = params.get('cropId');
+
+    if (cropIdFromUrl) {
+      return cropIdFromUrl.toUpperCase();
+    }
+
+    try {
+      const latestCrop = JSON.parse(localStorage.getItem('latest_crop') || 'null');
+      return latestCrop?.crop_id_code ? latestCrop.crop_id_code.toUpperCase() : '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function updateAuthNotice() {
+    const user = CropIdApi.getStoredUser();
+    const notice = document.getElementById('authNotice');
+
+    if (!user) {
+      notice.className = 'notice warn';
+      notice.textContent = 'You can track publicly without login, but saving a handoff requires signing in first.';
+      return;
+    }
+
+    notice.className = 'notice info';
+    notice.textContent = `Signed in as ${user.full_name || user.username || user.email}. You can add records for crops you own.`;
+  }
+
+  function resetFormAfterSave(cropId) {
+    document.getElementById('scanBatchId').value = cropId || '';
+    document.getElementById('scanStage').value = 'Harvested';
+    document.getElementById('scanHandler').value = '';
+    document.getElementById('scanRole').value = '';
+    document.getElementById('scanLocation').value = '';
+    document.getElementById('scanTemp').value = '';
+    document.getElementById('scanHumidity').value = '';
+    document.getElementById('scanQuality').value = '';
+    document.getElementById('scanNotes').value = '';
+  }
+
+  async function addScan() {
+    const cropId = document.getElementById('scanBatchId').value.trim().toUpperCase();
+    const stage = document.getElementById('scanStage').value;
+    const handlerName = document.getElementById('scanHandler').value.trim();
+    const handlerRole = document.getElementById('scanRole').value.trim();
+    const location = document.getElementById('scanLocation').value.trim();
+    const temperature = document.getElementById('scanTemp').value.trim();
+    const humidity = document.getElementById('scanHumidity').value.trim();
+    const qualityStatus = document.getElementById('scanQuality').value;
+    const notes = document.getElementById('scanNotes').value.trim();
+    const token = CropIdApi.getAccessToken();
+
+    if (!cropId) {
+      alert('Please enter the Crop ID first.');
+      return;
+    }
+
+    if (!location) {
+      alert('Please fill the location for this handoff.');
+      return;
+    }
+
+    if (!token) {
+      alert('Please login first to save a supply chain record.');
+      window.location.href = `login.html?redirect=supply-chain&cropId=${encodeURIComponent(cropId)}`;
+      return;
+    }
+
+    if (!activeCrop || activeCrop.crop_id_code !== cropId) {
+      document.getElementById('batchSearch').value = cropId;
+      await loadBatch();
+    }
+
+    if (!activeCrop) {
+      alert('This crop could not be loaded, so the record was not saved.');
+      return;
+    }
+
+    const payload = {
+      crop_id: activeCrop.id,
+      stage,
+      location,
+      temperature: temperature ? parseFloat(temperature) : null,
+      humidity: humidity ? parseFloat(humidity) : null,
+      handler_name: handlerName || null,
+      handler_role: handlerRole || null,
+      notes: notes || null,
+      quality_status: qualityStatus || null
+    };
+
+    setButtonLoading('addScanBtn', true, 'Saving...', 'Save Supply Chain Record');
+
+    try {
+      await CropIdApi.request('/supply-chain', {
+        method: 'POST',
+        headers: CropIdApi.getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+
+      setNotice(`Saved ${stage} stage for ${cropId}. Redirecting to verification page...`, 'info');
+      alert(`Supply chain record saved: ${stage}`);
+      window.location.href = `consumer-verification.html?cropId=${encodeURIComponent(cropId)}`;
+    } catch (error) {
+      if (error.status === 403) {
+        alert('This logged-in account cannot add records for that crop. Please use the same farmer account that created it.');
+      } else if (error.status === 401) {
+        alert('Your login session expired. Please sign in again.');
+        window.location.href = 'login.html';
+      } else {
+        alert(error.data?.message || 'Failed to save the supply chain record.');
+      }
+    } finally {
+      setButtonLoading('addScanBtn', false, 'Saving...', 'Save Supply Chain Record');
+      updateAuthNotice();
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    updateAuthNotice();
+    renderProgress(null);
+
+    const suggestedCropId = getSuggestedCropId();
+    if (suggestedCropId) {
+      updateSearchFields(suggestedCropId);
+      document.getElementById('searchHint').textContent = `Latest crop detected: ${suggestedCropId}. Click Track to load its journey or save the next handoff.`;
+      await loadBatch();
+    } else {
+      updateSearchFields('NO-CROP');
+      document.getElementById('batchSearch').value = '';
+      document.getElementById('scanBatchId').value = '';
+      document.getElementById('batchBadge').textContent = 'NO-CROP';
+      renderProgress(null);
+    }
+
+    document.getElementById('trackBtn').addEventListener('click', loadBatch);
+    document.getElementById('addScanBtn').addEventListener('click', addScan);
+    document.getElementById('batchSearch').addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        loadBatch();
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Farmer Registration - CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="background.css"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a;
+      --green-mid: #2d6a4f;
+      --green-bright: #52b788;
+      --green-light: #b7e4c7;
+      --gold: #d4a017;
+      --white: #ffffff;
+      --red: #e74c3c;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a1f12;
+      min-height: 100vh;
+    }
+    nav {
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+      position: relative;
+      z-index: 10;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-light);
+      text-decoration: none;
+    }
+    .logo span { color: var(--gold); }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.65);
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .nav-links a:hover { color: var(--green-bright); }
+    .page-hero {
+      padding: 2.8rem 5% 1.8rem;
+    }
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      color: var(--white);
+      font-weight: 700;
+    }
+    .page-hero p {
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      max-width: 720px;
+      line-height: 1.6;
+    }
+    .step-indicator {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .step-dot {
+      width: 32px;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      transition: background 0.3s;
+    }
+    .step-dot.active { background: var(--green-bright); }
+    .step-dot.done { background: rgba(82, 183, 136, 0.55); }
+    .step-label {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+    .form-container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 5% 4rem;
+    }
+    .alert {
+      display: none;
+      margin-bottom: 1.2rem;
+      padding: 0.95rem 1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .alert.show { display: block; }
+    .alert.success {
+      background: rgba(82, 183, 136, 0.12);
+      border: 1px solid rgba(82, 183, 136, 0.3);
+      color: #b7f1d4;
+    }
+    .alert.error {
+      background: rgba(231, 76, 60, 0.12);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+      color: #ff9f96;
+    }
+    .form-section {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(82, 183, 136, 0.2);
+      border-radius: 18px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      display: none;
+      backdrop-filter: blur(10px);
+    }
+    .form-section.active {
+      display: block;
+      animation: fadeIn 0.35s ease;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(82, 183, 136, 0.2);
+    }
+    .section-icon {
+      width: 42px;
+      height: 42px;
+      background: rgba(82, 183, 136, 0.2);
+      border: 1px solid rgba(82, 183, 136, 0.25);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green-light);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--white);
+    }
+    .section-header p {
+      font-size: 0.84rem;
+      color: rgba(255, 255, 255, 0.52);
+      margin-top: 0.2rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    label .req { color: var(--red); margin-left: 2px; }
+    input, select, textarea {
+      padding: 0.75rem 1rem;
+      border: 1.5px solid rgba(82, 183, 136, 0.3);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--white);
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    input::placeholder, textarea::placeholder { color: rgba(255, 255, 255, 0.35); }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--green-bright);
+      box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.15);
+      background: rgba(255, 255, 255, 0.12);
+    }
+    input.error, select.error, textarea.error { border-color: var(--red); }
+    .error-msg {
+      color: #ff9f96;
+      font-size: 0.78rem;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+    
+    /* Radio group styling for role selection */
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1.2rem;
+      border: 1.5px solid rgba(82, 183, 136, 0.3);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .radio-item:hover {
+      border-color: var(--green-light);
+      background: rgba(82, 183, 136, 0.1);
+    }
+    .radio-item input[type="radio"] {
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      accent-color: var(--green-bright);
+    }
+    .radio-item input[type="radio"]:checked + label,
+    .radio-item input[type="radio"]:checked ~ span {
+      color: var(--green-bright);
+    }
+    .radio-item:has(input[type="radio"]:checked) {
+      border-color: var(--green-bright);
+      background: rgba(82, 183, 136, 0.15);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 92px;
+    }
+    .hint {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.48);
+      line-height: 1.5;
+    }
+    .radio-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .radio-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1rem;
+      border: 1.5px solid rgba(82, 183, 136, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: rgba(255, 255, 255, 0.78);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .radio-item input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--green-mid);
+    }
+    .photo-upload {
+      border: 2px dashed rgba(82, 183, 136, 0.28);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .photo-upload:hover {
+      border-color: var(--green-bright);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .photo-upload input { display: none; }
+    .photo-upload p {
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .photo-upload strong { color: var(--green-light); }
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      gap: 1rem;
+    }
+    .btn-back,
+    .btn-next,
+    .btn-submit,
+    .btn-secondary {
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 0.8rem 1.5rem;
+      text-decoration: none;
+      text-align: center;
+    }
+    .btn-back {
+      background: transparent;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      color: rgba(255, 255, 255, 0.72);
+    }
+    .btn-back:hover {
+      border-color: var(--green-bright);
+      color: var(--green-bright);
+    }
+    .btn-next {
+      background: var(--green-deep);
+      color: #fff;
+      border: none;
+    }
+    .btn-next:hover {
+      background: var(--green-mid);
+      transform: translateY(-1px);
+    }
+    .btn-submit {
+      background: var(--green-bright);
+      color: var(--green-deep);
+      border: none;
+      font-weight: 700;
+    }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(82, 183, 136, 0.35);
+    }
+    .btn-submit:disabled {
+      background: #4e5d56;
+      color: #b8c0bb;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1.5px solid rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.78);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 3rem 2rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(82, 183, 136, 0.2);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+    }
+    .success-screen.show {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--green-bright);
+      color: var(--green-deep);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 auto 1.5rem;
+    }
+    .success-screen h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: var(--white);
+    }
+    .success-screen p {
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 0.6rem;
+      line-height: 1.6;
+    }
+    .farmer-id-display {
+      background: rgba(26, 60, 42, 0.9);
+      color: var(--green-bright);
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-family: monospace;
+      margin: 1.5rem auto;
+      display: inline-block;
+      letter-spacing: 2px;
+    }
+    .success-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .inline-action {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .small-button {
+      background: transparent;
+      border: 1.5px solid var(--green-bright);
+      color: var(--green-light);
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 4%; }
+      .page-hero { padding: 2rem 4% 1.4rem; }
+      .page-hero h1 { font-size: 1.9rem; }
+      .form-container { padding: 0 4% 3rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      .nav-buttons { flex-direction: column; }
+      .btn-back, .btn-next, .btn-submit, .btn-secondary { width: 100%; }
+      .success-actions { flex-direction: column; }
+      .success-actions a { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Crop<span>ID</span></a>
+  <div class="nav-links">
+    <a href="distributor-registration.html">Register as Distributor</a>
+    <a href="admin-registration.html">Register as Admin</a>
+    <a href="login.html">Login</a>
+    <a href="index.html">Home</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Farmer Registration</h1>
+  <p>Create your CropID account, store your basic farm identity, and move straight into crop registration with the backend API.</p>
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+    <span class="step-label" id="stepLabel">Step 1 of 3 - Personal and account details</span>
+  </div>
+</div>
+
+<div class="form-container">
+  <div class="alert" id="alertBox"></div>
+
+  <div class="form-section active" id="step1">
+    <div class="section-header">
+      <div class="section-icon">1</div>
+      <div>
+        <h2>Personal and Account Details</h2>
+        <p>Create the backend account you will use for future sign-ins.</p>
+      </div>
+    </div>
+
+
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="fullName" placeholder="e.g. Ramesh Patil"/>
+        <span class="error-msg" id="err-fullName">Please enter your full name</span>
+      </div>
+      <div class="form-group">
+        <label>Username <span class="req">*</span></label>
+        <input type="text" id="username" placeholder="Choose a unique username"/>
+        <span class="error-msg" id="err-username">Username must be at least 3 characters</span>
+      </div>
+      <div class="form-group">
+        <label>Email <span class="req">*</span></label>
+        <input type="email" id="email" placeholder="name@example.com"/>
+        <span class="error-msg" id="err-email">Enter a valid email address</span>
+      </div>
+      <div class="form-group">
+        <label>Mobile Number <span class="req">*</span></label>
+        <input type="tel" id="mobile" placeholder="10-digit mobile number" maxlength="10"/>
+        <span class="error-msg" id="err-mobile">Enter a valid 10-digit mobile number</span>
+      </div>
+      <div class="form-group">
+        <label>Password <span class="req">*</span></label>
+        <input type="password" id="password" placeholder="Minimum 8 characters"/>
+        <span class="error-msg" id="err-password">Password must be at least 8 characters</span>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password <span class="req">*</span></label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter your password"/>
+        <span class="error-msg" id="err-confirmPassword">Passwords do not match</span>
+      </div>
+      <div class="form-group">
+        <label>Aadhar Number <span class="req">*</span></label>
+        <input type="text" id="aadhar" placeholder="XXXX-XXXX-XXXX" maxlength="14"/>
+        <span class="error-msg" id="err-aadhar">Enter a valid 12-digit Aadhar number</span>
+      </div>
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input type="date" id="dob"/>
+      </div>
+      <div class="form-group full">
+        <label>Gender</label>
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="gender" value="male" checked/> Male</label>
+          <label class="radio-item"><input type="radio" name="gender" value="female"/> Female</label>
+          <label class="radio-item"><input type="radio" name="gender" value="other"/> Other</label>
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Farmer Photo</label>
+        <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+          <input type="file" id="photoInput" accept="image/*" onchange="previewPhoto(this)"/>
+          <p><strong>Click to upload</strong> an optional profile photo</p>
+          <p id="photoLabel">JPG or PNG, up to 2MB. This stays in the browser for now.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <a href="index.html" class="btn-back">Cancel</a>
+      <button class="btn-next" type="button" onclick="goToStep(2)">Next: Farm Details -&gt;</button>
+    </div>
+  </div>
+
+  <div class="form-section" id="step2">
+    <div class="section-header">
+      <div class="section-icon">2</div>
+      <div>
+        <h2>Farm Details</h2>
+        <p>These fields map to the backend farmer profile and help with crop setup.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Farm Name <span class="req">*</span></label>
+        <input type="text" id="farmName" placeholder="e.g. Green Valley Farm"/>
+        <span class="error-msg" id="err-farmName">Please enter your farm name</span>
+      </div>
+      <div class="form-group">
+        <label>Total Land Area (Acres) <span class="req">*</span></label>
+        <input type="number" id="landArea" placeholder="e.g. 5.5" min="0.1" step="0.1"/>
+        <span class="error-msg" id="err-landArea">Enter a valid land area</span>
+      </div>
+      <div class="form-group">
+        <label>Village <span class="req">*</span></label>
+        <input type="text" id="village" placeholder="Village name"/>
+        <span class="error-msg" id="err-village">Please enter the village name</span>
+      </div>
+      <div class="form-group">
+        <label>Taluka <span class="req">*</span></label>
+        <input type="text" id="taluka" placeholder="Taluka name"/>
+        <span class="error-msg" id="err-taluka">Please enter the taluka</span>
+      </div>
+      <div class="form-group">
+        <label>District <span class="req">*</span></label>
+        <select id="district">
+          <option value="">Select District</option>
+          <option>Aurangabad</option>
+          <option>Pune</option>
+          <option>Nashik</option>
+          <option>Ahmednagar</option>
+          <option>Solapur</option>
+          <option>Kolhapur</option>
+          <option>Satara</option>
+          <option>Sangli</option>
+          <option>Latur</option>
+          <option>Osmanabad</option>
+          <option>Nanded</option>
+          <option>Jalna</option>
+          <option>Beed</option>
+          <option>Parbhani</option>
+          <option>Hingoli</option>
+          <option>Amravati</option>
+          <option>Nagpur</option>
+          <option>Wardha</option>
+          <option>Yavatmal</option>
+          <option>Buldhana</option>
+          <option>Washim</option>
+          <option>Akola</option>
+          <option>Other</option>
+        </select>
+        <span class="error-msg" id="err-district">Please select your district</span>
+      </div>
+      <div class="form-group">
+        <label>Land Type</label>
+        <select id="landType">
+          <option value="">Select Type</option>
+          <option>Irrigated</option>
+          <option>Rain-fed</option>
+          <option>Mixed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>GPS Latitude</label>
+        <input type="text" id="lat" placeholder="Auto-detect or enter manually"/>
+      </div>
+      <div class="form-group">
+        <label>GPS Longitude</label>
+        <input type="text" id="lng" placeholder="Auto-detect or enter manually"/>
+      </div>
+      <div class="form-group full inline-action">
+        <button class="small-button" type="button" onclick="detectLocation()">Use Current Location</button>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-back" type="button" onclick="goToStep(1)">&lt;- Back</button>
+      <button class="btn-next" type="button" onclick="goToStep(3)">Next: Crop Details -&gt;</button>
+    </div>
+  </div>
+
+  <div class="form-section" id="step3">
+    <div class="section-header">
+      <div class="section-icon">3</div>
+      <div>
+        <h2>Crop and Additional Details</h2>
+        <p>These details are saved locally so the next crop setup page can reuse them.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Primary Crop <span class="req">*</span></label>
+        <select id="primaryCrop">
+          <option value="">Select Crop</option>
+          <option>Wheat</option>
+          <option>Rice</option>
+          <option>Sugarcane</option>
+          <option>Cotton</option>
+          <option>Soybean</option>
+          <option>Turmeric</option>
+          <option>Onion</option>
+          <option>Tomato</option>
+          <option>Jowar</option>
+          <option>Bajra</option>
+          <option>Maize</option>
+          <option>Grape</option>
+          <option>Pomegranate</option>
+          <option>Banana</option>
+          <option>Other</option>
+        </select>
+        <span class="error-msg" id="err-primaryCrop">Please select a primary crop</span>
+      </div>
+      <div class="form-group">
+        <label>Farming Type</label>
+        <select id="farmingType">
+          <option value="">Select Type</option>
+          <option>Organic</option>
+          <option>Conventional</option>
+          <option>Natural Farming</option>
+          <option>Integrated Farming</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Other Crops</label>
+        <input type="text" id="otherCrops" placeholder="Optional list of secondary crops"/>
+      </div>
+      <div class="form-group">
+        <label>Bank Account Number</label>
+        <input type="text" id="bankAcc" placeholder="Optional account number"/>
+      </div>
+      <div class="form-group">
+        <label>IFSC Code</label>
+        <input type="text" id="ifsc" placeholder="e.g. SBIN0001234"/>
+      </div>
+      <div class="form-group full">
+        <label>Additional Notes</label>
+        <textarea id="notes" placeholder="Special practices, certifications, or anything you want to remember for crop setup"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>
+          <input type="checkbox" id="terms" style="width:16px;height:16px;margin-right:0.5rem;accent-color:var(--green-mid)"/>
+          I confirm the information is accurate and I want CropID to create my backend account.
+        </label>
+        <span class="error-msg" id="err-terms">Please accept the confirmation before continuing</span>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn-back" type="button" onclick="goToStep(2)">&lt;- Back</button>
+      <button class="btn-submit" type="button" id="submitBtn" onclick="submitRegistration()">Create Account</button>
+    </div>
+  </div>
+
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">OK</div>
+    <h2>Registration Successful</h2>
+    <p>Your CropID account is created and signed in. You can continue directly to crop setup now.</p>
+    <div class="farmer-id-display" id="generatedFarmerID">FRM-000000</div>
+    <p id="successSubtext">Account reference generated from your backend user id.</p>
+    <div class="success-actions">
+      <a href="crop-soil-input.html" class="btn-submit">Continue to Crop Setup -&gt;</a>
+      <a href="login.html" class="btn-secondary" id="loginLink">Open Login Page</a>
+      <a href="index.html" class="btn-back">Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<script src="api-client.js"></script>
+<script src="background.js"></script>
+<script>
+  let currentStep = 1;
+
+  function showAlert(type, message) {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.className = `alert show ${type}`;
+    alertBox.textContent = message;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function clearAlert() {
+    const alertBox = document.getElementById('alertBox');
+    alertBox.className = 'alert';
+    alertBox.textContent = '';
+  }
+
+  function goToStep(step) {
+    if (step > currentStep && !validateStep(currentStep)) {
+      return;
+    }
+
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    currentStep = step;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    updateIndicator();
+    clearAlert();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateIndicator() {
+    const labels = [
+      '',
+      'Personal and account details',
+      'Farm details',
+      'Crop and additional details'
+    ];
+
+    for (let index = 1; index <= 3; index += 1) {
+      const dot = document.getElementById(`dot${index}`);
+      dot.className = 'step-dot';
+
+      if (index < currentStep) {
+        dot.classList.add('done');
+      } else if (index === currentStep) {
+        dot.classList.add('active');
+      }
+    }
+
+    document.getElementById('stepLabel').textContent = `Step ${currentStep} of 3 - ${labels[currentStep]}`;
+  }
+
+  function setFieldState(fieldId, errorId, isValid) {
+    const field = document.getElementById(fieldId);
+    const error = document.getElementById(errorId);
+
+    if (isValid) {
+      field.classList.remove('error');
+      error.classList.remove('show');
+      return true;
+    }
+
+    field.classList.add('error');
+    error.classList.add('show');
+    return false;
+  }
+
+  function validateStep(step) {
+    let valid = true;
+
+    if (step === 1) {
+      valid = setFieldState('fullName', 'err-fullName', document.getElementById('fullName').value.trim().length > 2) && valid;
+      valid = setFieldState('username', 'err-username', document.getElementById('username').value.trim().length >= 3) && valid;
+      valid = setFieldState('email', 'err-email', /\S+@\S+\.\S+/.test(document.getElementById('email').value.trim())) && valid;
+      valid = setFieldState('mobile', 'err-mobile', /^\d{10}$/.test(document.getElementById('mobile').value.trim())) && valid;
+      valid = setFieldState('password', 'err-password', document.getElementById('password').value.length >= 8) && valid;
+      valid = setFieldState(
+        'confirmPassword',
+        'err-confirmPassword',
+        document.getElementById('confirmPassword').value === document.getElementById('password').value &&
+        document.getElementById('confirmPassword').value.length >= 8
+      ) && valid;
+
+      const aadharDigits = document.getElementById('aadhar').value.replace(/\D/g, '');
+      valid = setFieldState('aadhar', 'err-aadhar', aadharDigits.length === 12) && valid;
+    }
+
+    if (step === 2) {
+      valid = setFieldState('farmName', 'err-farmName', document.getElementById('farmName').value.trim().length > 1) && valid;
+      valid = setFieldState('landArea', 'err-landArea', parseFloat(document.getElementById('landArea').value) > 0) && valid;
+      valid = setFieldState('village', 'err-village', document.getElementById('village').value.trim().length > 1) && valid;
+      valid = setFieldState('taluka', 'err-taluka', document.getElementById('taluka').value.trim().length > 1) && valid;
+      valid = setFieldState('district', 'err-district', document.getElementById('district').value !== '') && valid;
+    }
+
+    if (step === 3) {
+      valid = setFieldState('primaryCrop', 'err-primaryCrop', document.getElementById('primaryCrop').value !== '') && valid;
+
+      const terms = document.getElementById('terms');
+      const termsError = document.getElementById('err-terms');
+
+      if (!terms.checked) {
+        termsError.classList.add('show');
+        valid = false;
+      } else {
+        termsError.classList.remove('show');
+      }
+    }
+
+    if (!valid) {
+      showAlert('error', 'Please complete the highlighted fields before moving ahead.');
+    }
+
+    return valid;
+  }
+
+  function detectLocation() {
+    if (!navigator.geolocation) {
+      showAlert('error', 'Location detection is not available in this browser.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        document.getElementById('lat').value = position.coords.latitude.toFixed(6);
+        document.getElementById('lng').value = position.coords.longitude.toFixed(6);
+        showAlert('success', 'Location detected successfully.');
+      },
+      () => showAlert('error', 'Could not detect location. Please enter it manually.')
+    );
+  }
+
+  function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+      document.getElementById('photoLabel').textContent = `Selected: ${input.files[0].name}`;
+    }
+  }
+
+  function formatReference(userId) {
+    return `FRM-${String(userId).padStart(6, '0')}`;
+  }
+
+  function getProfileDraft() {
+    return {
+      aadhar: document.getElementById('aadhar').value,
+      dob: document.getElementById('dob').value || null,
+      gender: document.querySelector('input[name="gender"]:checked')?.value || null,
+      farm_name: document.getElementById('farmName').value.trim(),
+      village: document.getElementById('village').value.trim(),
+      taluka: document.getElementById('taluka').value.trim(),
+      district: document.getElementById('district').value,
+      land_area: parseFloat(document.getElementById('landArea').value),
+      land_type: document.getElementById('landType').value,
+      gps_lat: document.getElementById('lat').value || null,
+      gps_lng: document.getElementById('lng').value || null,
+      primary_crop: document.getElementById('primaryCrop').value,
+      farming_type: document.getElementById('farmingType').value,
+      other_crops: document.getElementById('otherCrops').value.trim(),
+      bank_account: document.getElementById('bankAcc').value.trim(),
+      ifsc: document.getElementById('ifsc').value.trim(),
+      notes: document.getElementById('notes').value.trim()
+    };
+  }
+
+  function setSubmitState(isSubmitting) {
+    const button = document.getElementById('submitBtn');
+    button.disabled = isSubmitting;
+    button.textContent = isSubmitting ? 'Creating account...' : 'Create Account';
+  }
+
+  async function submitRegistration() {
+    if (!validateStep(3)) {
+      return;
+    }
+
+    setSubmitState(true);
+    clearAlert();
+
+    // Get selected role from form
+    const selectedRole = 'farmer';
+
+    const registrationData = {
+      username: document.getElementById('username').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value,
+      full_name: document.getElementById('fullName').value.trim(),
+      phone: document.getElementById('mobile').value.trim(),
+      role: selectedRole,  // Always farmer on this page
+      farm_name: document.getElementById('farmName').value.trim(),
+      farm_size: parseFloat(document.getElementById('landArea').value),
+      village: document.getElementById('village').value.trim(),
+      taluka: document.getElementById('taluka').value.trim(),
+      district: document.getElementById('district').value
+    };
+
+    try {
+      const registerResult = await CropIdApi.request('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(registrationData)
+      });
+
+      let loginResult = null;
+
+      try {
+        loginResult = await CropIdApi.request('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            username: registrationData.username,
+            password: registrationData.password
+          })
+        });
+
+        CropIdApi.saveSession(loginResult);
+      } catch (loginError) {
+        showAlert('success', 'Account created. Automatic sign-in did not complete, so use the login page next.');
+      }
+
+      const user = (loginResult && loginResult.user) || registerResult.user;
+      const reference = formatReference(user.id);
+      const profileDraft = {
+        ...getProfileDraft(),
+        user_id: user.id,
+        username: user.username,
+        full_name: user.full_name,
+        email: user.email,
+        phone: user.phone,
+        reference
+      };
+
+      localStorage.setItem('cropid_farmer_profile', JSON.stringify(profileDraft));
+      localStorage.setItem('farmerCode', reference);
+      localStorage.setItem('farmerId_uuid', String(user.id));
+
+      document.getElementById('step3').classList.remove('active');
+      document.getElementById('successScreen').classList.add('show');
+      document.getElementById('generatedFarmerID').textContent = reference;
+      document.getElementById('loginLink').href = `login.html?registered=1&username=${encodeURIComponent(user.username)}`;
+
+      if (loginResult) {
+        document.getElementById('successSubtext').textContent = `Signed in as ${user.username}. Continue directly to crop setup or reopen login any time.`;
+        
+        // Auto-redirect based on user role after 3 seconds
+        const roleRedirectMap = {
+          'farmer': 'crop-soil-input.html',
+          'admin': 'admin-dashboard.html',
+          'distributor': 'supply-chain.html',
+          'supplier': 'supply-chain.html',
+          'consumer': 'consumer-verification.html',
+          'inspector': 'supply-chain.html'
+        };
+        
+        const redirectUrl = roleRedirectMap[user.role] || 'index.html';
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 3000);
+      } else {
+        document.getElementById('successSubtext').textContent = `Account created for ${user.username}. Use the login page if you want to sign in manually.`;
+      }
+
+      clearAlert();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      const fieldErrors = error.data?.errors;
+
+      if (fieldErrors?.username) {
+        document.getElementById('err-username').textContent = fieldErrors.username.join(', ');
+        document.getElementById('err-username').classList.add('show');
+        document.getElementById('username').classList.add('error');
+        currentStep = 1;
+        updateIndicator();
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step3').classList.remove('active');
+      }
+
+      const message = error.data?.message || 'Registration failed. Please review the form and try again.';
+      showAlert('error', message);
+    } finally {
+      setSubmitState(false);
+    }
+  }
+
+  document.getElementById('aadhar').addEventListener('input', function onAadharInput() {
+    let digits = this.value.replace(/\D/g, '').slice(0, 12);
+
+    if (digits.length > 8) {
+      digits = `${digits.slice(0, 4)}-${digits.slice(4, 8)}-${digits.slice(8)}`;
+    } else if (digits.length > 4) {
+      digits = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
+
+    this.value = digits;
+  });
+</script>
+</body>
+</html>

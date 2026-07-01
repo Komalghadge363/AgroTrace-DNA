@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="background.css"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a;
+      --green-mid: #2d6a4f;
+      --green-bright: #52b788;
+      --green-light: #b7e4c7;
+      --gold: #d4a017;
+      --red: #e74c3c;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a1f12;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    nav {
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(82, 183, 136, 0.15);
+      position: relative;
+      z-index: 10;
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-light);
+      text-decoration: none;
+    }
+    .logo span { color: var(--gold); }
+    .nav-back {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .nav-back:hover { color: var(--green-bright); }
+    .login-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 5%;
+      position: relative;
+      z-index: 1;
+    }
+    .login-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      max-width: 920px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(82, 183, 136, 0.2);
+      border-radius: 24px;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+    }
+    .login-left {
+      background: linear-gradient(135deg, rgba(45, 106, 79, 0.42), rgba(26, 60, 42, 0.65));
+      padding: 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 1px solid rgba(82, 183, 136, 0.15);
+    }
+    .login-left h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .login-left h2 em {
+      color: var(--green-bright);
+      font-style: normal;
+    }
+    .login-left p {
+      color: rgba(255, 255, 255, 0.58);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.85rem;
+    }
+    .feature-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(82, 183, 136, 0.2);
+      border: 1px solid rgba(82, 183, 136, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .login-right { padding: 3rem 2.5rem; }
+    .login-right h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .login-right p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+    .role-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1.8rem;
+    }
+    .role-tab {
+      padding: 0.6rem 0.4rem;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.4);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .role-tab .tab-icon {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+    .role-tab.active {
+      background: rgba(82, 183, 136, 0.15);
+      border-color: rgba(82, 183, 136, 0.5);
+      color: var(--green-bright);
+    }
+    .form-group { margin-bottom: 1.1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 0.4rem;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      transition: all 0.2s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--green-bright);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .form-group input::placeholder { color: rgba(255, 255, 255, 0.25); }
+    .form-group input.error { border-color: var(--red); }
+    .input-wrapper { position: relative; }
+    .toggle-password {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+    }
+    .toggle-password:hover { color: var(--green-bright); }
+    .error-msg {
+      color: var(--red);
+      font-size: 0.75rem;
+      margin-top: 0.3rem;
+      display: none;
+    }
+    .error-msg.show { display: block; }
+    .forgot-link {
+      display: block;
+      text-align: right;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.8rem;
+      text-decoration: none;
+      margin-top: -0.6rem;
+      margin-bottom: 1.2rem;
+    }
+    .forgot-link:hover { color: var(--green-bright); }
+    .btn-login {
+      width: 100%;
+      padding: 0.9rem;
+      background: var(--green-bright);
+      color: var(--green-deep);
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1rem;
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(82, 183, 136, 0.35);
+    }
+    .btn-login:disabled {
+      background: #444;
+      color: #888;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .divider span {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 0.78rem;
+    }
+    .google-auth-wrap {
+      display: grid;
+      gap: 0.7rem;
+      margin-bottom: 0.25rem;
+    }
+    .google-button-host {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .google-status {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.45);
+      text-align: center;
+      min-height: 1.1rem;
+    }
+    .google-status.error { color: #ff8f8f; }
+    .signup-link {
+      text-align: center;
+      margin-top: 1.2rem;
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.4);
+    }
+    .signup-link a {
+      color: var(--green-bright);
+      text-decoration: none;
+    }
+    .signup-link a:hover { text-decoration: underline; }
+    .alert {
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      margin-bottom: 1rem;
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .alert.show { display: flex; }
+    .alert.success {
+      background: rgba(82, 183, 136, 0.15);
+      border: 1px solid rgba(82, 183, 136, 0.3);
+      color: var(--green-bright);
+    }
+    .alert.error {
+      background: rgba(231, 76, 60, 0.12);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+      color: #ff6b6b;
+    }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(26, 60, 42, 0.3);
+      border-top-color: var(--green-deep);
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-login.loading .spinner { display: inline-block; }
+    .btn-login.loading .btn-text { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 768px) {
+      .login-container { grid-template-columns: 1fr; }
+      .login-left { display: none; }
+      .login-right { padding: 2rem 1.5rem; }
+      .login-wrapper {
+        padding: 1.5rem 4%;
+        align-items: flex-start;
+        padding-top: 2rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .role-tabs { grid-template-columns: repeat(3, 1fr); }
+      .role-tab {
+        font-size: 0.72rem;
+        padding: 0.5rem 0.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Crop<span>ID</span></a>
+  <a href="index.html" class="nav-back">&larr; Back to Home</a>
+</nav>
+
+<div class="login-wrapper">
+  <div class="alert" id="alertBox">
+    <span id="alertIcon">OK</span>
+    <span id="alertMsg">Login successful.</span>
+  </div>
+  <div class="login-container">
+    <div class="login-left">
+      <h2>Welcome to<br/><em>CropID</em> System</h2>
+      <p>Sign in to manage crop traceability, farmer records, QR history, and supply chain updates from one place.</p>
+      <div class="feature-list">
+        <div class="feature-item"><div class="feature-dot">1</div>Farmer registration and soil analysis</div>
+        <div class="feature-item"><div class="feature-dot">2</div>DNA-backed crop identity records</div>
+        <div class="feature-item"><div class="feature-dot">3</div>QR code traceability and verification</div>
+        <div class="feature-item"><div class="feature-dot">4</div>Supply chain visibility for handlers</div>
+        <div class="feature-item"><div class="feature-dot">5</div>Admin statistics and audits</div>
+      </div>
+    </div>
+
+    <div class="login-right" id="loginView">
+      <h3>Sign In</h3>
+      <p>Use your CropID username, email, or registered mobile number to access the backend account you created.</p>
+
+      <div class="role-tabs">
+        <button class="role-tab active" type="button" onclick="setRole('farmer')" id="tab-farmer">
+          <span class="tab-icon">F</span>Farmer
+        </button>
+        <button class="role-tab" type="button" onclick="setRole('supplier')" id="tab-supplier">
+          <span class="tab-icon">S</span>Supplier
+        </button>
+        <button class="role-tab" type="button" onclick="setRole('admin')" id="tab-admin">
+          <span class="tab-icon">A</span>Admin
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label id="emailLabel">Username / Email / Mobile</label>
+        <input type="text" id="emailInput" placeholder="username, email@example.com, or 9876543210"/>
+        <span class="error-msg" id="emailErr">Enter your username, email, or 10-digit mobile number</span>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="passwordInput" placeholder="Enter your password"/>
+          <button class="toggle-password" type="button" onclick="togglePassword()" id="toggleBtn">Show</button>
+        </div>
+        <span class="error-msg" id="passErr">Password must be at least 8 characters</span>
+      </div>
+
+      <a href="#" class="forgot-link" onclick="toggleForgotPassword()">Forgot Password?</a>
+
+      <button class="btn-login" type="button" id="loginBtn" onclick="handleLogin()">
+        <span class="btn-text">Sign In -&gt;</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="divider"><span>or</span></div>
+
+      <div class="google-auth-wrap">
+        <div class="google-button-host" id="googleButtonHost"></div>
+        <div class="google-status" id="googleStatus">Loading Google sign-in...</div>
+      </div>
+
+      <div class="signup-link">
+        Need an account?
+        <a href="farmer-registration.html">Farmer</a> ·
+        <a href="distributor-registration.html">Distributor</a> ·
+        <a href="admin-registration.html">Admin</a>
+      </div>
+    </div>
+    
+    <div class="login-right" id="forgotPasswordView" style="display: none;">
+      <h3>Reset Password</h3>
+      <p>Enter your email to receive a 6-digit OTP for password reset.</p>
+      
+      <div id="step1">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="resetEmailInput" placeholder="email@example.com"/>
+        </div>
+        <button class="btn-login" type="button" id="sendOtpBtn" onclick="handleSendOtp()">
+          <span class="btn-text">Send OTP</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+      <div id="step2" style="display: none;">
+        <div class="form-group">
+          <label>6-Digit OTP</label>
+          <input type="text" id="otpInput" placeholder="123456" maxlength="6"/>
+        </div>
+        <div class="form-group">
+          <label>New Password</label>
+          <input type="password" id="newPasswordInput" placeholder="At least 8 characters"/>
+        </div>
+        <button class="btn-login" type="button" id="verifyOtpBtn" onclick="handleVerifyOtp()">
+          <span class="btn-text">Reset Password</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+      <div class="signup-link">
+        <a href="#" onclick="toggleForgotPassword()">&larr; Back to Login</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="api-client.js"></script>
+<script src="background.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+  let currentRole = 'farmer';
+
+  function setRole(role) {
+    currentRole = role;
+    document.querySelectorAll('.role-tab').forEach(tab => tab.classList.remove('active'));
+    document.getElementById(`tab-${role}`).classList.add('active');
+
+    const labels = {
+      farmer: 'Username / Email / Mobile',
+      supplier: 'Username / Email / Mobile',
+      admin: 'Admin Username / Email'
+    };
+
+    const placeholders = {
+      farmer: 'username, email@example.com, or 9876543210',
+      supplier: 'username, email@example.com, or 9876543210',
+      admin: 'admin username or admin@example.com'
+    };
+
+    document.getElementById('emailLabel').textContent = labels[role];
+    document.getElementById('emailInput').placeholder = placeholders[role];
+  }
+
+  function togglePassword() {
+    const input = document.getElementById('passwordInput');
+    const button = document.getElementById('toggleBtn');
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      button.textContent = 'Hide';
+    } else {
+      input.type = 'password';
+      button.textContent = 'Show';
+    }
+  }
+
+  function showAlert(type, message) {
+    const box = document.getElementById('alertBox');
+    const icon = document.getElementById('alertIcon');
+    const text = document.getElementById('alertMsg');
+
+    box.className = `alert show ${type}`;
+    icon.textContent = type === 'success' ? 'OK' : 'ERR';
+    text.textContent = message;
+
+    setTimeout(() => box.classList.remove('show'), 4000);
+  }
+
+  function setLoading(isLoading) {
+    const button = document.getElementById('loginBtn');
+    button.classList.toggle('loading', isLoading);
+    button.disabled = isLoading;
+  }
+
+  function validate() {
+    let valid = true;
+    const identifier = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+
+    const identifierInput = document.getElementById('emailInput');
+    const identifierError = document.getElementById('emailErr');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordError = document.getElementById('passErr');
+
+    if (identifier.length < 3) {
+      identifierInput.classList.add('error');
+      identifierError.classList.add('show');
+      valid = false;
+    } else {
+      identifierInput.classList.remove('error');
+      identifierError.classList.remove('show');
+    }
+
+    if (password.length < 8) {
+      passwordInput.classList.add('error');
+      passwordError.classList.add('show');
+      valid = false;
+    } else {
+      passwordInput.classList.remove('error');
+      passwordError.classList.remove('show');
+    }
+
+    return valid;
+  }
+
+  async function handleLogin() {
+    if (!validate()) {
+      return;
+    }
+
+    const identifier = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+
+    setLoading(true);
+
+    try {
+      // Use the CropIdApi.login() function which includes auto-redirect
+      const data = await CropIdApi.login(identifier, password);
+      showAlert('success', `Signed in as ${data.user.full_name || data.user.username}. Redirecting...`);
+      // The redirect happens automatically in CropIdApi.login()
+    } catch (error) {
+      showAlert('error', error.data?.message || 'Unable to sign in. Please check your credentials.');
+      setLoading(false);
+    }
+  }
+
+  function toggleForgotPassword() {
+    const loginView = document.getElementById('loginView');
+    const forgotView = document.getElementById('forgotPasswordView');
+    
+    if (loginView.style.display === 'none') {
+      loginView.style.display = 'block';
+      forgotView.style.display = 'none';
+    } else {
+      loginView.style.display = 'none';
+      forgotView.style.display = 'block';
+      document.getElementById('step1').style.display = 'block';
+      document.getElementById('step2').style.display = 'none';
+    }
+  }
+
+  async function handleSendOtp() {
+    const email = document.getElementById('resetEmailInput').value.trim();
+    if (!email) return showAlert('error', 'Please enter your email.');
+    
+    const btn = document.getElementById('sendOtpBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    
+    try {
+      await CropIdApi.forgotPassword(email);
+      showAlert('success', 'OTP sent successfully to your email.');
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'block';
+    } catch (error) {
+      showAlert('error', error.data?.message || 'Failed to send OTP.');
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  async function handleVerifyOtp() {
+    const email = document.getElementById('resetEmailInput').value.trim();
+    const otp = document.getElementById('otpInput').value.trim();
+    const newPassword = document.getElementById('newPasswordInput').value;
+    
+    if (otp.length !== 6) return showAlert('error', 'OTP must be 6 digits.');
+    if (newPassword.length < 8) return showAlert('error', 'Password must be at least 8 characters.');
+    
+    const btn = document.getElementById('verifyOtpBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    
+    try {
+      await CropIdApi.verifyOTP(email, otp, newPassword);
+      showAlert('success', 'Password reset successful! You can now login.');
+      document.getElementById('emailInput').value = email;
+      toggleForgotPassword();
+    } catch (error) {
+      showAlert('error', error.data?.message || 'Invalid OTP or expired.');
+    } finally {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+  }
+
+  function getPostLoginRedirect(role, fallbackRole) {
+    const params = new URLSearchParams(window.location.search);
+    const redirect = params.get('redirect');
+    const cropId = params.get('cropId');
+
+    if (redirect === 'supply-chain') {
+      return cropId
+        ? `supply-chain.html?cropId=${encodeURIComponent(cropId)}`
+        : 'supply-chain.html';
+    }
+
+    return CropIdApi.getRoleRedirect(role, fallbackRole);
+  }
+
+  function prefillLoginDetails() {
+    const params = new URLSearchParams(window.location.search);
+    const identifier = params.get('username') || params.get('identifier');
+
+    if (identifier) {
+      document.getElementById('emailInput').value = identifier;
+    }
+
+    if (params.get('registered') === '1') {
+      showAlert('success', 'Account created successfully. Sign in to continue.');
+    }
+  }
+
+  function setGoogleStatus(message, isError = false) {
+    const status = document.getElementById('googleStatus');
+    status.textContent = message || '';
+    status.classList.toggle('error', Boolean(isError));
+  }
+
+  async function handleGoogleCredentialResponse(response) {
+    if (!response?.credential) {
+      showAlert('error', 'Google sign-in did not return a valid credential.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await CropIdApi.googleLogin(response.credential, currentRole);
+      showAlert('success', 'Google sign in successful. Redirecting...');
+    } catch (error) {
+      showAlert('error', error.data?.message || 'Google sign in failed.');
+      setLoading(false);
+    }
+  }
+
+  function renderGoogleButton(clientId) {
+    const host = document.getElementById('googleButtonHost');
+    host.innerHTML = '';
+
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleCredentialResponse,
+      auto_select: false,
+      cancel_on_tap_outside: true
+    });
+
+    google.accounts.id.renderButton(host, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      text: 'continue_with',
+      shape: 'rectangular',
+      logo_alignment: 'left',
+      width: Math.min(host.offsetWidth || 360, 360)
+    });
+
+    setGoogleStatus('Use the Google button above to continue instantly.');
+  }
+
+  async function initGoogleSignIn() {
+    try {
+      const config = await CropIdApi.getGoogleConfig();
+      if (!config.enabled || !config.client_id) {
+        setGoogleStatus('Google sign-in is disabled until a Google client ID is configured on the server.', true);
+        return;
+      }
+
+      let attempts = 0;
+      const waitForGoogle = () => {
+        if (window.google?.accounts?.id) {
+          renderGoogleButton(config.client_id);
+          return;
+        }
+
+        attempts += 1;
+        if (attempts > 40) {
+          setGoogleStatus('Google sign-in script could not be loaded. Refresh and try again.', true);
+          return;
+        }
+
+        window.setTimeout(waitForGoogle, 150);
+      };
+
+      waitForGoogle();
+    } catch (error) {
+      setGoogleStatus(error.data?.message || 'Unable to load Google sign-in right now.', true);
+    }
+  }
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      handleLogin();
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    prefillLoginDetails();
+    initGoogleSignIn();
+  });
+</script>
+</body>
+</html>

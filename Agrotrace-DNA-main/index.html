@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CropID — Digital Crop Identity System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green-deep: #1a3c2a;
+      --green-mid: #2d6a4f;
+      --green-bright: #52b788;
+      --green-light: #b7e4c7;
+      --gold: #d4a017;
+      --cream: #f5f0e8;
+      --soil: #6b4226;
+      --white: #ffffff;
+      --text-dark: #1a1a1a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background:  #0a1f12;
+      color: var(--text-dark);
+      overflow-x: hidden;
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.2rem 5%;
+      background: rgba(0, 0, 0, 0);
+      backdrop-filter: blur(0.5px);
+      border-bottom: 1px solid rgba(82, 183, 136, 0.2);
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; font-weight: 900;
+      color: var(--green-light);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--gold); }
+    nav ul { list-style: none; display: flex; gap: 2rem; }
+    nav ul a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none; font-size: 0.9rem;
+      font-weight: 400; transition: color 0.2s;
+    }
+    nav ul a:hover { color: var(--green-bright); }
+    .nav-cta {
+      background: var(--green-bright);
+      color: var(--green-deep) !important;
+      padding: 0.5rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 500 !important;
+    }
+
+    .hero {
+      min-height: 100vh;
+      background: transparent;
+      display: flex; align-items: center;
+      padding: 7rem 5% 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 70% 50%, rgba(82,183,136,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 10% 80%, rgba(45,106,79,0.3) 0%, transparent 50%);
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(82,183,136,0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(82,183,136,0.05) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .hero-content { position: relative; max-width: 700px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(82,183,136,0.15);
+      border: 1px solid rgba(82,183,136,0.3);
+      padding: 0.4rem 1rem; border-radius: 100px;
+      color: var(--green-bright); font-size: 0.82rem; font-weight: 500;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-badge::before { content: '🌾'; }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900; line-height: 1.05;
+      color: var(--white);
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+    h1 em { color: var(--green-bright); font-style: normal; }
+    h1 .gold { color: var(--gold); }
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: 1.1rem; line-height: 1.7;
+      color: rgba(255,255,255,0.65);
+      max-width: 540px;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+    .hero-actions {
+      margin-top: 2.5rem; display: flex; gap: 1rem; flex-wrap: wrap;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+    .btn-primary {
+      background: var(--green-bright); color: var(--green-deep);
+      border: none; padding: 0.85rem 2rem;
+      border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(82,183,136,0.4); }
+    .btn-outline {
+      background: transparent; color: var(--white);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      padding: 0.85rem 2rem;
+      border-radius: 8px; font-size: 1rem; font-weight: 400;
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--green-bright); color: var(--green-bright); }
+
+    .hero-visual {
+      position: absolute; right: 5%; top: 50%;
+      transform: translateY(-50%);
+      animation: fadeUp 0.8s ease 0.4s both;
+    }
+    .qr-mockup {
+      width: 200px; height: 200px;
+      background: white; border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+    }
+    .qr-cell { border-radius: 2px; background: var(--green-deep); animation: qrPulse 3s ease-in-out infinite; }
+    .qr-cell.empty { background: transparent; }
+    .qr-label {
+      text-align: center; margin-top: 0.8rem;
+      color: rgba(255,255,255,0.5); font-size: 0.75rem;
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+
+    .stats {
+      background: var(--white);
+      padding: 3rem 5%;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0;
+      border-bottom: 1px solid #eee;
+    }
+    .stat-item { padding: 2rem; text-align: center; border-right: 1px solid #eee; }
+    .stat-item:last-child { border-right: none; }
+    .stat-num { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 900; color: var(--green-mid); }
+    .stat-label { color: #666; font-size: 0.9rem; margin-top: 0.3rem; }
+
+    .section { padding: 6rem 5%; }
+    .section-tag {
+      display: inline-block; background: var(--green-light); color: var(--green-deep);
+      padding: 0.3rem 0.9rem; border-radius: 4px;
+      font-size: 0.8rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700; color: var(--green-deep);
+      line-height: 1.1; margin-bottom: 3rem;
+    }
+
+    .steps-flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+    .step-card {
+      background: var(--white); border: 1px solid #e8e8e8;
+      border-radius: 16px; padding: 2rem; position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .step-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+    .step-num {
+      width: 40px; height: 40px; background: var(--green-deep); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--white); font-weight: 700; font-size: 1rem; margin-bottom: 1.2rem;
+    }
+    .step-icon { font-size: 2rem; margin-bottom: 0.8rem; }
+    .step-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--green-deep); }
+    .step-card p { font-size: 0.88rem; color: #666; line-height: 1.6; }
+
+    .modules-section { background: var(--green-deep); padding: 6rem 5%; }
+    .modules-section .section-title { color: var(--white); }
+    .modules-section .section-tag { background: rgba(82,183,136,0.2); color: var(--green-bright); }
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .module-card {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(82,183,136,0.2);
+      border-radius: 16px; padding: 1.8rem; transition: background 0.3s, border-color 0.3s;
+    }
+    .module-card:hover { background: rgba(82,183,136,0.1); border-color: rgba(82,183,136,0.5); }
+    .module-icon { font-size: 2.2rem; margin-bottom: 1rem; }
+    .module-card h3 { color: var(--green-light); font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .module-card p { color: rgba(255,255,255,0.55); font-size: 0.85rem; line-height: 1.6; }
+    .module-link { display: inline-block; margin-top: 1rem; color: var(--green-bright); font-size: 0.85rem; text-decoration: none; font-weight: 500; }
+    .module-link:hover { text-decoration: underline; }
+
+    .cta-section { padding: 6rem 5%; text-align: center; background: linear-gradient(135deg, var(--green-mid), var(--green-deep)); }
+    .cta-section h2 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 4vw, 3rem); color: var(--white); margin-bottom: 1rem; }
+    .cta-section p { color: rgba(255,255,255,0.7); font-size: 1.05rem; margin-bottom: 2rem; }
+
+    footer {
+      background: #0f2318; padding: 2rem 5%;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+    }
+    footer p { color: rgba(255,255,255,0.4); font-size: 0.85rem; }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; }
+    .footer-links a:hover { color: var(--green-bright); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes qrPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+    @media (max-width: 768px) {
+      .hero-visual { display: none; }
+      nav ul { display: none; }
+      .stat-item { border-right: none; border-bottom: 1px solid #eee; }
+    }
+/* Background Override */
+body { background: #0a1f12 !important; }
+.hero { background: transparent !important; }
+.stats { background: rgba(255,255,255,0.05) !important; }
+.section { background: transparent !important; }
+.modules-section { background: rgba(0,0,0,0.3) !important; }
+.cta-section { background: rgba(0,0,0,0.4) !important; }
+footer { background: rgba(0,0,0,0.5) !important; }
+
+/* Step Cards - White Remove */
+.step-card {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(82, 183, 136, 0.25) !important;
+  backdrop-filter: blur(10px) !important;
+}
+.step-card h3 { color: #ffffff !important; }
+.step-card p { color: rgba(255, 255, 255, 0.7) !important; }
+.step-num {
+  background: rgba(82, 183, 136, 0.3) !important;
+  color: #52b788 !important;
+  border: 1px solid rgba(82, 183, 136, 0.5) !important;
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 1024px) {
+  .modules-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps-flow { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  nav { padding: 1rem 4%; }
+  nav ul { display: none; }
+
+  .hero { padding: 6rem 4% 3rem; min-height: auto; }
+  .hero-visual { display: none; }
+  h1 { font-size: 2.2rem; }
+  .hero-sub { font-size: 0.95rem; }
+  .hero-actions { flex-direction: column; }
+  .btn-primary, .btn-outline { width: 100%; text-align: center; padding: 0.9rem; }
+
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .stat-item { border-right: none; border-bottom: 1px solid #eee; padding: 1.2rem; }
+  .stat-num { font-size: 2rem; }
+
+  .section { padding: 3rem 4%; }
+  .section-title { font-size: 1.8rem; margin-bottom: 1.5rem; }
+  .steps-flow { grid-template-columns: 1fr; }
+
+  .modules-section { padding: 3rem 4%; }
+  .modules-grid { grid-template-columns: 1fr; }
+
+  .cta-section { padding: 3rem 4%; }
+  .cta-section h2 { font-size: 1.8rem; }
+
+  footer { flex-direction: column; text-align: center; padding: 1.5rem 4%; }
+  .footer-links { flex-wrap: wrap; justify-content: center; gap: 1rem; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.8rem; }
+  .stats { grid-template-columns: 1fr; }
+  .hero-badge { font-size: 0.72rem; }
+}
+  </style>
+
+  <link rel="stylesheet" href="background.css"/>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Crop<span>ID</span></div>
+  <ul>
+    <li><a href="#how">How it Works</a></li>
+    <li><a href="#modules">Modules</a></li>
+    <li><a href="login.html">Login</a></li>
+    <li><a href="farmer-registration.html">Farmer</a></li>
+    <li><a href="distributor-registration.html">Distributor</a></li>
+    <li><a href="admin-registration.html">Admin</a></li>
+    <li><a href="consumer-verification.html" class="nav-cta">Verify Crop</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Soil Intelligence · DNA Algorithm · QR Traceability</div>
+    <h1>Every Crop Has a <em>Story</em> — <span class="gold">Trace It.</span></h1>
+    <p class="hero-sub">A digital identity system that gives every crop batch a unique DNA-based QR code — from soil analysis to consumer verification.</p>
+    <div class="hero-actions">
+      <a href="farmer-registration.html" class="btn-primary">Register as Farmer</a>
+      <a href="distributor-registration.html" class="btn-outline">Register as Distributor</a>
+      <a href="consumer-verification.html" class="btn-outline">Verify a Crop</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="qr-mockup" id="qrMockup"></div>
+    <p class="qr-label">Scan to Verify</p>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">Integrated Modules</div></div>
+  <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Crop Traceability</div></div>
+  <div class="stat-item"><div class="stat-num">SHA</div><div class="stat-label">DNA Encryption</div></div>
+  <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Food Fraud Possible</div></div>
+</section>
+
+<section class="section" id="how">
+  <div class="section-tag">Process</div>
+  <h2 class="section-title">Farm to Fork —<br>Every Step Recorded</h2>
+  <div class="steps-flow">
+    <div class="step-card"><div class="step-num">01</div><div class="step-icon">🌍</div><h3>Soil Analysis</h3><p>Farmer enters soil data — pH, nitrogen, moisture. System creates a soil intelligence profile.</p></div>
+    <div class="step-card"><div class="step-num">02</div><div class="step-icon">🧬</div><h3>DNA Code Generation</h3><p>Unique digital fingerprint generated from soil + crop + GPS + date + farmer ID combination.</p></div>
+    <div class="step-card"><div class="step-num">03</div><div class="step-icon">📦</div><h3>QR Attached to Batch</h3><p>QR code printed and attached to crop bag. Every scan logs time, location, and handler.</p></div>
+    <div class="step-card"><div class="step-num">04</div><div class="step-icon">🔍</div><h3>Consumer Verifies</h3><p>Anyone scans QR to see full crop history — origin, soil quality, organic status, journey.</p></div>
+  </div>
+</section>
+
+<section class="modules-section" id="modules">
+  <div class="section-tag">Modules</div>
+  <h2 class="section-title">7 Integrated Modules</h2>
+  <div class="modules-grid">
+    <div class="module-card"><div class="module-icon">🌱</div><h3>Soil Intelligence Engine</h3><p>Analyze soil pH, nitrogen, moisture & minerals. Create a complete soil profile per farm.</p><a href="crop-soil-input.html" class="module-link">Open Module →</a></div>
+    <div class="module-card"><div class="module-icon">🧬</div><h3>DNA Generation Algorithm</h3><p>SHA-based unique crop fingerprint from soil data, GPS, farmer ID and sowing date.</p><a href="QR-Generator.html" class="module-link">Generate DNA →</a></div>
+    <div class="module-card"><div class="module-icon">📱</div><h3>QR Traceability System</h3><p>Convert DNA code to scannable QR. Track every touchpoint in the supply chain.</p><a href="QR-Generator.html" class="module-link">Generate QR →</a></div>
+    <div class="module-card"><div class="module-icon">👨‍🌾</div><h3>Farmer Registration</h3><p>Register farmers with land records, crop history and geo-tagged farm location.</p><a href="farmer-registration.html" class="module-link">Register →</a></div>
+    <div class="module-card"><div class="module-icon">🚚</div><h3>Supply Chain Tracker</h3><p>Track crop journey: Farm → Mandi → Processor → Retailer → Consumer.</p><a href="supply-chain.html" class="module-link">Track Now →</a></div>
+    <div class="module-card"><div class="module-icon">✅</div><h3>Consumer Verification</h3><p>Scan QR to instantly verify authenticity, organic status and complete origin story.</p><a href="consumer-verification.html" class="module-link">Verify Crop →</a></div>
+    <div class="module-card"><div class="module-icon">📊</div><h3>Admin & Analytics</h3><p>Government dashboard — region-wise crop data, soil health trends, farmer stats.</p><a href="admin-dashboard.html" class="module-link">Open Dashboard →</a></div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>Start Your Crop's Digital Journey</h2>
+  <p>Join thousands of farmers and distributors securing crop identity with technology.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+    <a href="farmer-registration.html" class="btn-primary">Register as Farmer</a>
+    <a href="distributor-registration.html" class="btn-primary" style="background:var(--gold);">Register as Distributor</a>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 CropID — Digital Crop Identity System</p>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="farmer-registration.html">Farmer</a>
+    <a href="distributor-registration.html">Distributor</a>
+    <a href="admin-registration.html">Admin</a>
+    <a href="admin-dashboard.html">Dashboard</a>
+    <a href="consumer-verification.html">Verify</a>
+  </div>
+</footer>
+
+<script>
+  const grid = document.getElementById('qrMockup');
+  if (grid) {
+    const pattern = [1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,0,1,0,1,0,1,1,0,0,1,0,0,1,1,0,1,0,1,0,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1];
+    const extra = Array.from({length: 42}, () => Math.random() > 0.5 ? 1 : 0);
+    const full = [...pattern, ...extra];
+    full.forEach((v, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'qr-cell' + (v === 0 ? ' empty' : '');
+      if (v === 1) cell.style.animationDelay = (Math.random() * 2) + 's';
+      grid.appendChild(cell);
+    });
+  }
+</script>
+<script src="background.js"></script>
+</body>
+</html>

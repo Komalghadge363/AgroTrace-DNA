@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a; --green-mid: #2d6a4f; --green-bright: #52b788;
+      --green-light: #b7e4c7; --gold: #d4a017; --cream: #f5f0e8; --white: #fff;
+      --sidebar-w: 240px;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: #f0f2f5; display: flex; min-height: 100vh; }
+
+    .sidebar { width: var(--sidebar-w); background: var(--green-deep); min-height: 100vh; padding: 1.5rem 0; flex-shrink: 0; position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; }
+    .sidebar-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--green-light); padding: 0 1.5rem; margin-bottom: 2rem; display: block; text-decoration: none; }
+    .sidebar-logo span { color: var(--gold); }
+    .sidebar-section { padding: 0.3rem 1.5rem; margin-bottom: 0.3rem; font-size: 0.7rem; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 1.5px; }
+    .sidebar-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.75rem 1.5rem; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.88rem; transition: all 0.2s; border-left: 3px solid transparent; }
+    .sidebar-item:hover { color: white; background: rgba(255,255,255,0.05); }
+    .sidebar-item.active { color: var(--green-bright); background: rgba(82,183,136,0.1); border-left-color: var(--green-bright); }
+    .sidebar-icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 0; }
+
+    .topbar { background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e8e8e8; position: sticky; top: 0; z-index: 10; }
+    .topbar h1 { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--green-deep); }
+    .topbar-right { display: flex; align-items: center; gap: 1.2rem; }
+    .topbar-badge { background: rgba(82,183,136,0.12); color: var(--green-mid); padding: 0.35rem 0.9rem; border-radius: 6px; font-size: 0.8rem; font-weight: 500; }
+    .admin-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green-mid); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.9rem; font-weight: 600; }
+
+    .page { padding: 2rem; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+    .kpi-card { background: white; border-radius: 14px; padding: 1.5rem; border: 1px solid #e8e8e8; position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .kpi-card:nth-child(1)::before { background: var(--green-bright); }
+    .kpi-card:nth-child(2)::before { background: var(--gold); }
+    .kpi-card:nth-child(3)::before { background: #3a7ebf; }
+    .kpi-card:nth-child(4)::before { background: #e74c3c; }
+    .kpi-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+    .kpi-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--green-deep); }
+    .kpi-label { font-size: 0.8rem; color: #888; margin-top: 0.2rem; }
+    .kpi-change { font-size: 0.75rem; margin-top: 0.5rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem; }
+    .kpi-change.up { color: #27ae60; }
+    .kpi-change.down { color: #e74c3c; }
+
+    .charts-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-card { background: white; border-radius: 14px; padding: 1.5rem; border: 1px solid #e8e8e8; }
+    .chart-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--green-deep); margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .chart-filter { font-size: 0.78rem; color: #888; font-family: 'DM Sans', sans-serif; }
+
+    .bar-chart { display: flex; align-items: flex-end; gap: 0.5rem; height: 140px; }
+    .bar-group { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; flex: 1; }
+    .bar { width: 100%; border-radius: 6px 6px 0 0; transition: opacity 0.2s; }
+    .bar:hover { opacity: 0.8; }
+    .bar-label { font-size: 0.68rem; color: #999; }
+
+    .donut-container { display: flex; align-items: center; gap: 1rem; }
+    .donut { position: relative; width: 130px; height: 130px; flex-shrink: 0; }
+    .donut svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .donut-num { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--green-deep); font-weight: 700; }
+    .donut-sub { font-size: 0.65rem; color: #aaa; }
+    .donut-legend { display: flex; flex-direction: column; gap: 0.5rem; }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #555; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    .table-card { background: white; border-radius: 14px; border: 1px solid #e8e8e8; margin-bottom: 1.5rem; overflow: hidden; }
+    .table-header { padding: 1.2rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
+    .table-title { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--green-deep); }
+    .search-mini { padding: 0.45rem 0.9rem; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 0.82rem; font-family: 'DM Sans', sans-serif; }
+    .search-mini:focus { outline: none; border-color: var(--green-bright); }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8f8f8; padding: 0.7rem 1rem; text-align: left; font-size: 0.75rem; color: #888; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 0.85rem 1rem; font-size: 0.85rem; border-bottom: 1px solid #f5f5f5; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+    .status-pill { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 100px; font-size: 0.72rem; font-weight: 600; }
+    .pill-active { background: #e8f5e9; color: #2e7d32; }
+    .pill-transit { background: #fff3e0; color: #e65100; }
+    .pill-pending { background: #f5f5f5; color: #888; }
+    .pill-delivered { background: #e3f2fd; color: #1565c0; }
+
+    .bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+    .mini-card { background: white; border-radius: 14px; padding: 1.5rem; border: 1px solid #e8e8e8; }
+    .mini-card-title { font-size: 0.82rem; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; }
+    .activity-item { display: flex; gap: 0.8rem; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid #f5f5f5; }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-bright); flex-shrink: 0; margin-top: 5px; }
+    .activity-text { font-size: 0.82rem; color: #555; line-height: 1.4; }
+    .activity-time { font-size: 0.72rem; color: #bbb; }
+    .soil-region { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0; font-size: 0.82rem; }
+    .soil-region:last-child { border-bottom: none; }
+    .soil-region-bar { width: 80px; height: 6px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
+    .soil-region-fill { height: 100%; background: var(--green-bright); border-radius: 3px; }
+
+    @media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } .charts-row { grid-template-columns: 1fr; } .bottom-row { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }  
+
+    /* Background Overrides */
+body { background: #0a1f12 !important; }
+.sidebar { background: rgba(10,20,15,0.95) !important; border-right: 1px solid rgba(82,183,136,0.15) !important; }
+.topbar {
+  background: rgba(10,25,16,0.9) !important;
+  border-color: rgba(82,183,136,0.15) !important;
+  backdrop-filter: blur(12px) !important;
+}
+.topbar h1 { color: #ffffff !important; }
+.kpi-card {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(82,183,136,0.2) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.kpi-value { color: #ffffff !important; }
+.kpi-label { color: rgba(255,255,255,0.5) !important; }
+.chart-card {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(82,183,136,0.2) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.chart-title { color: #ffffff !important; }
+.bar-label { color: rgba(255,255,255,0.4) !important; }
+.table-card {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(82,183,136,0.2) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.table-title { color: #ffffff !important; }
+th {
+  background: rgba(255,255,255,0.05) !important;
+  color: rgba(255,255,255,0.5) !important;
+}
+td { color: rgba(255,255,255,0.8) !important; border-color: rgba(255,255,255,0.05) !important; }
+tr:hover td { background: rgba(255,255,255,0.04) !important; }
+.mini-card {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(82,183,136,0.2) !important;
+  backdrop-filter: blur(8px) !important;
+}
+.mini-card-title { color: rgba(255,255,255,0.4) !important; }
+.activity-text { color: rgba(255,255,255,0.7) !important; }
+.search-mini {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(82,183,136,0.3) !important;
+  color: #ffffff !important;
+}
+.page { background: transparent !important; }   
+
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+  .bottom-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; }
+  .topbar { padding: 1rem 4%; }
+  .topbar h1 { font-size: 1.1rem; }
+  .topbar-right { gap: 0.6rem; }
+  .topbar-badge { display: none; }
+  .page { padding: 1rem 4%; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+  .kpi-card { padding: 1rem; }
+  .kpi-value { font-size: 1.5rem; }
+  .kpi-icon { font-size: 1.4rem; }
+  .chart-card { padding: 1rem; }
+  .bar-chart { height: 100px; }
+  .donut-container { flex-direction: column; align-items: flex-start; }
+  .table-header { flex-direction: column; gap: 0.8rem; align-items: flex-start; }
+  .search-mini { width: 100%; }
+  table { font-size: 0.78rem; }
+  th, td { padding: 0.5rem 0.6rem; }
+  .mini-card { padding: 1rem; }
+
+  /* Mobile Sidebar Toggle Button */
+  .mob-menu-btn {
+    display: flex !important;
+    align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    background: rgba(82,183,136,0.15);
+    border: 1px solid rgba(82,183,136,0.3);
+    border-radius: 8px; cursor: pointer;
+    font-size: 1.1rem; color: #52b788;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .kpi-card { padding: 0.9rem; }
+  th:nth-child(4), td:nth-child(4),
+  th:nth-child(5), td:nth-child(5),
+  th:nth-child(7), td:nth-child(7) { display: none; }
+}
+  </style>
+
+  <link rel="stylesheet" href="background.css"/>
+
+  <script src="api-client.js"></script>
+</head>
+<body>
+
+<aside class="sidebar">
+  <a href="index.html" class="sidebar-logo">Crop<span>ID</span></a>
+  <div class="sidebar-section">Main</div>
+  <a href="admin-dashboard.html" class="sidebar-item active"><span class="sidebar-icon">📊</span>Dashboard</a>
+  <a href="farmer-registration.html" class="sidebar-item"><span class="sidebar-icon">👨‍🌾</span>Farmers</a>
+  <a href="crop-soil-input.html" class="sidebar-item"><span class="sidebar-icon">🌱</span>Crop Batches</a>
+  <a href="qr-generator.html" class="sidebar-item"><span class="sidebar-icon">🧬</span>DNA / QR</a>
+  <div class="sidebar-section">Operations</div>
+  <a href="supply-chain.html" class="sidebar-item"><span class="sidebar-icon">🚚</span>Supply Chain</a>
+  <a href="consumer-verification.html" class="sidebar-item"><span class="sidebar-icon">✅</span>Verifications</a>
+  <div class="sidebar-section">Reports</div>
+  <a href="#" class="sidebar-item"><span class="sidebar-icon">📈</span>Analytics</a>
+  <a href="#" class="sidebar-item"><span class="sidebar-icon">🌍</span>Soil Health Map</a>
+  <a href="#" class="sidebar-item"><span class="sidebar-icon">⚙️</span>Settings</a>
+</aside>
+
+<div class="main-content">
+  <div class="topbar">
+    <h1>Admin Dashboard</h1>
+    <div class="topbar-right">
+      <span class="topbar-badge">🟢 System Live</span>
+      <span style="font-size:0.82rem;color:#888">Kharif Season 2025</span>
+      <div class="admin-avatar">AD</div>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-icon">👨‍🌾</div><div class="kpi-value">1,248</div><div class="kpi-label">Registered Farmers</div><div class="kpi-change up">↑ +48 this month</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-value">3,891</div><div class="kpi-label">Active Crop Batches</div><div class="kpi-change up">↑ +312 this week</div></div>
+      <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-value">12.4K</div><div class="kpi-label">QR Verifications</div><div class="kpi-change up">↑ +2.1K today</div></div>
+      <div class="kpi-card"><div class="kpi-icon">⚠️</div><div class="kpi-value">7</div><div class="kpi-label">Fraud Alerts</div><div class="kpi-change down">↓ -3 from last week</div></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Monthly Crop Registrations<span class="chart-filter">2025 Season</span></div>
+        <div class="bar-chart">
+          <div class="bar-group"><div class="bar" style="height:60%;background:rgba(82,183,136,0.3)"></div><div class="bar-label">Jan</div></div>
+          <div class="bar-group"><div class="bar" style="height:75%;background:rgba(82,183,136,0.4)"></div><div class="bar-label">Feb</div></div>
+          <div class="bar-group"><div class="bar" style="height:55%;background:rgba(82,183,136,0.3)"></div><div class="bar-label">Mar</div></div>
+          <div class="bar-group"><div class="bar" style="height:90%;background:var(--green-mid)"></div><div class="bar-label">Apr</div></div>
+          <div class="bar-group"><div class="bar" style="height:100%;background:var(--green-bright)"></div><div class="bar-label">May</div></div>
+          <div class="bar-group"><div class="bar" style="height:85%;background:var(--green-mid)"></div><div class="bar-label">Jun</div></div>
+          <div class="bar-group"><div class="bar" style="height:70%;background:rgba(82,183,136,0.5)"></div><div class="bar-label">Jul</div></div>
+          <div class="bar-group"><div class="bar" style="height:40%;background:rgba(82,183,136,0.25)"></div><div class="bar-label">Aug</div></div>
+        </div>
+        <div style="display:flex;gap:1.5rem;margin-top:1rem">
+          <div style="font-size:0.8rem;color:#888">Peak: <strong style="color:var(--green-mid)">May 2025 — 612 batches</strong></div>
+          <div style="font-size:0.8rem;color:#888">Avg: <strong style="color:var(--green-mid)">487/month</strong></div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Crop Distribution</div>
+        <div class="donut-container">
+          <div class="donut">
+            <svg viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f0f0f0" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--green-bright)" stroke-width="3" stroke-dasharray="32 68" stroke-dashoffset="0"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="21 79" stroke-dashoffset="-32"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#3a7ebf" stroke-width="3" stroke-dasharray="18 82" stroke-dashoffset="-53"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e74c3c" stroke-width="3" stroke-dasharray="15 85" stroke-dashoffset="-71"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#9b59b6" stroke-width="3" stroke-dasharray="14 86" stroke-dashoffset="-86"/>
+            </svg>
+            <div class="donut-center"><div class="donut-num">3.8K</div><div class="donut-sub">Batches</div></div>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green-bright)"></div>Wheat 32%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Cotton 21%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3a7ebf"></div>Soybean 18%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div>Onion 15%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div>Others 14%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Recent Crop Batches</div>
+        <input class="search-mini" type="text" placeholder="🔍 Search batches..." oninput="filterTable(this.value)"/>
+      </div>
+      <table>
+        <thead><tr><th>Batch ID</th><th>Farmer</th><th>Crop</th><th>District</th><th>Date</th><th>Status</th><th>Verifications</th></tr></thead>
+        <tbody id="tableBody">
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">CROP-A1B2-C3D4</span></td><td>Ramesh Patil</td><td>Wheat</td><td>Aurangabad</td><td>15 Jun 2025</td><td><span class="status-pill pill-transit">In Transit</span></td><td>47</td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">CROP-E5F6-G7H8</span></td><td>Sunita Deshmukh</td><td>Cotton</td><td>Pune</td><td>14 Jun 2025</td><td><span class="status-pill pill-active">At Mandi</span></td><td>23</td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">CROP-I9J0-K1L2</span></td><td>Anil Shinde</td><td>Soybean</td><td>Nashik</td><td>12 Jun 2025</td><td><span class="status-pill pill-delivered">Delivered</span></td><td>112</td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">CROP-M3N4-O5P6</span></td><td>Priya Jadhav</td><td>Onion</td><td>Latur</td><td>11 Jun 2025</td><td><span class="status-pill pill-active">Processing</span></td><td>8</td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">CROP-Q7R8-S9T0</span></td><td>Vijay Kulkarni</td><td>Turmeric</td><td>Sangli</td><td>10 Jun 2025</td><td><span class="status-pill pill-delivered">Delivered</span></td><td>89</td></tr>
+          <tr><td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">CROP-U1V2-W3X4</span></td><td>Meera Bhosale</td><td>Jowar</td><td>Solapur</td><td>9 Jun 2025</td><td><span class="status-pill pill-pending">Registered</span></td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bottom-row">
+      <div class="mini-card">
+        <div class="mini-card-title">Recent Activity</div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">New farmer registered — Meera Bhosale (Solapur)</div><div class="activity-time">2 mins ago</div></div></div>
+        <div class="activity-item"><div class="activity-dot" style="background:var(--gold)"></div><div><div class="activity-text">Batch CROP-A1B2 scanned at Pune Mandi</div><div class="activity-time">15 mins ago</div></div></div>
+        <div class="activity-item"><div class="activity-dot" style="background:#3a7ebf"></div><div><div class="activity-text">12 QR verifications in last 1 hour</div><div class="activity-time">1 hour ago</div></div></div>
+        <div class="activity-item"><div class="activity-dot" style="background:#e74c3c"></div><div><div class="activity-text">⚠️ Fraud alert: Batch ID mismatch detected</div><div class="activity-time">3 hours ago</div></div></div>
+        <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">Admin exported monthly batch report</div><div class="activity-time">5 hours ago</div></div></div>
+      </div>
+
+      <div class="mini-card">
+        <div class="mini-card-title">Soil Health by Region</div>
+        <div class="soil-region"><span>Aurangabad</span><div class="soil-region-bar"><div class="soil-region-fill" style="width:82%"></div></div><span style="font-size:0.78rem;font-weight:600;color:var(--green-mid)">82</span></div>
+        <div class="soil-region"><span>Pune</span><div class="soil-region-bar"><div class="soil-region-fill" style="width:75%"></div></div><span style="font-size:0.78rem;font-weight:600;color:var(--green-mid)">75</span></div>
+        <div class="soil-region"><span>Nashik</span><div class="soil-region-bar"><div class="soil-region-fill" style="width:68%"></div></div><span style="font-size:0.78rem;font-weight:600;color:var(--gold)">68</span></div>
+        <div class="soil-region"><span>Latur</span><div class="soil-region-bar"><div class="soil-region-fill" style="width:55%;background:var(--gold)"></div></div><span style="font-size:0.78rem;font-weight:600;color:var(--gold)">55</span></div>
+        <div class="soil-region"><span>Nagpur</span><div class="soil-region-bar"><div class="soil-region-fill" style="width:71%"></div></div><span style="font-size:0.78rem;font-weight:600;color:var(--green-mid)">71</span></div>
+        <div class="soil-region"><span>Solapur</span><div class="soil-region-bar"><div class="soil-region-fill" style="width:48%;background:#e74c3c"></div></div><span style="font-size:0.78rem;font-weight:600;color:#e74c3c">48</span></div>
+      </div>
+
+      <div class="mini-card">
+        <div class="mini-card-title">Quick Actions</div>
+        <div style="display:grid;gap:0.6rem">
+          <a href="farmer-registration.html" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(82,183,136,0.1);border:1px solid rgba(82,183,136,0.25);border-radius:8px;text-decoration:none;color:rgba(255,255,255,0.8);font-size:0.85rem">👨‍🌾 Register New Farmer</a>
+          <a href="QR-Generator.html" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(82,183,136,0.1);border:1px solid rgba(82,183,136,0.25);border-radius:8px;text-decoration:none;color:rgba(255,255,255,0.8);font-size:0.85rem">🧬 Generate Batch QR</a>
+          <a href="supply-chain.html" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(82,183,136,0.1);border:1px solid rgba(82,183,136,0.25);border-radius:8px;text-decoration:none;color:rgba(255,255,255,0.8);font-size:0.85rem">🚚 Track Supply Chain</a>
+          <a href="consumer-verification.html" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:rgba(82,183,136,0.1);border:1px solid rgba(82,183,136,0.25);border-radius:8px;text-decoration:none;color:rgba(255,255,255,0.8);font-size:0.85rem">✅ Verify a Crop</a>
+          <button onclick="alert('Report export started!')" style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;background:var(--green-mid);border:none;border-radius:8px;color:white;font-size:0.85rem;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif">📄 Export Monthly Report</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function escapeHtml(val) {
+  return String(val || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatDate(val) {
+  if (!val) return '—';
+  try { return new Date(val).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }); }
+  catch(e) { return val; }
+}
+
+function timeAgo(val) {
+  if (!val) return '';
+  const mins = Math.floor((Date.now() - new Date(val).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' mins ago';
+  if (mins < 1440) return Math.floor(mins/60) + ' hours ago';
+  return Math.floor(mins/1440) + ' days ago';
+}
+
+async function loadDashboardData() {
+  const token = CropIdApi.getAccessToken();
+  const user = CropIdApi.getStoredUser();
+
+  if (!token || !user) {
+    alert('Please login as admin to access the dashboard.');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // Update avatar
+  const avatar = document.querySelector('.admin-avatar');
+  if (avatar && user.full_name) {
+    avatar.textContent = user.full_name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  try {
+    // Fetch admin statistics
+    const stats = await CropIdApi.request('/admin/statistics', {
+      headers: CropIdApi.getAuthHeaders()
+    });
+
+    // Update KPI cards with real data
+    const kpiValues = document.querySelectorAll('.kpi-value');
+    const kpiLabels = document.querySelectorAll('.kpi-label');
+    const kpiChanges = document.querySelectorAll('.kpi-change');
+
+    if (kpiValues[0]) kpiValues[0].textContent = (stats.farmer_count || 0).toLocaleString();
+    if (kpiLabels[0]) kpiLabels[0].textContent = 'Registered Farmers';
+    if (kpiChanges[0]) kpiChanges[0].innerHTML = `↑ +${stats.new_farmers_this_week || 0} this week`;
+
+    if (kpiValues[1]) kpiValues[1].textContent = (stats.total_crops || 0).toLocaleString();
+    if (kpiLabels[1]) kpiLabels[1].textContent = 'Crop Batches';
+    if (kpiChanges[1]) kpiChanges[1].innerHTML = `↑ +${stats.new_crops_this_week || 0} this week`;
+
+    if (kpiValues[2]) kpiValues[2].textContent = (stats.qr_generated_count || 0).toLocaleString();
+    if (kpiLabels[2]) kpiLabels[2].textContent = 'QR Codes Generated';
+    if (kpiChanges[2]) kpiChanges[2].innerHTML = 'Overall total';
+
+    if (kpiValues[3]) kpiValues[3].textContent = (stats.total_supply_records || 0).toLocaleString();
+    if (kpiLabels[3]) kpiLabels[3].textContent = 'Supply Chain Records';
+    if (kpiChanges[3]) kpiChanges[3].innerHTML = 'Recorded handoffs';
+
+    // Update donut chart legend with real crop distribution
+    if (stats.crop_distribution && stats.crop_distribution.length > 0) {
+      const legend = document.querySelector('.donut-legend');
+      const colors = ['var(--green-bright)', 'var(--gold)', '#3a7ebf', '#e74c3c', '#9b59b6'];
+      const totalCrops = stats.total_crops || 1;
+
+      if (legend) {
+        legend.innerHTML = stats.crop_distribution.slice(0, 5).map((item, i) => {
+          const pct = Math.round((item.count / totalCrops) * 100);
+          return `<div class="legend-item"><div class="legend-dot" style="background:${colors[i] || '#888'}"></div>${escapeHtml(item.crop_type)} ${pct}% (${item.count})</div>`;
+        }).join('');
+      }
+
+      // Update donut center
+      const donutNum = document.querySelector('.donut-num');
+      if (donutNum) donutNum.textContent = stats.total_crops || 0;
+    }
+
+    // Render audit log activity
+    if (stats.recent_activity && stats.recent_activity.length > 0) {
+      const activityContainer = document.querySelector('.bottom-row .mini-card:first-child');
+      let actHTML = '<div class="mini-card-title">Recent Activity</div>';
+      stats.recent_activity.slice(0, 5).forEach(log => {
+        actHTML += `<div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text">${escapeHtml(log.action)} — ${escapeHtml(log.resource_type)} #${log.resource_id || ''}</div><div class="activity-time">${timeAgo(log.created_at)}</div></div></div>`;
+      });
+      if (activityContainer) activityContainer.innerHTML = actHTML;
+    }
+
+    // Update season label
+    const seasonLabel = document.querySelector('.topbar-right span[style]');
+    if (seasonLabel) seasonLabel.textContent = `Total Users: ${stats.total_users || 0}`;
+
+  } catch (err) {
+    console.log('Stats error:', err.message || err);
+  }
+
+  // Fetch crops for table
+  try {
+    const cropsData = await CropIdApi.request('/crops?per_page=10', {
+      headers: CropIdApi.getAuthHeaders()
+    });
+
+    if (cropsData.crops && cropsData.crops.length > 0) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = cropsData.crops.map(c => `
+        <tr>
+          <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.78rem">${escapeHtml(c.crop_id_code)}</span></td>
+          <td>Farmer #${c.farmer_id}</td>
+          <td>${escapeHtml(c.crop_type)}</td>
+          <td>—</td>
+          <td>${formatDate(c.created_at)}</td>
+          <td><span class="status-pill pill-${c.growth_stage === 'Germination' ? 'pending' : 'active'}">${escapeHtml(c.growth_stage || 'Registered')}</span></td>
+          <td>${c.is_organic ? 'Organic' : '—'}</td>
+        </tr>`).join('');
+    }
+  } catch (err) {
+    console.log('Crops fetch error:', err.message || err);
+  }
+}
+
+function filterTable(query) {
+  document.querySelectorAll('#tableBody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
+  });
+}
+
+window.addEventListener('load', loadDashboardData);
+</script>
+ <script src="background.js"></script>
+</body>
+</html>
+
+
+

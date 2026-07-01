@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crop and Soil Input - CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="background.css"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a;
+      --green-mid: #2d6a4f;
+      --green-bright: #52b788;
+      --green-light: #b7e4c7;
+      --gold: #d4a017;
+      --soil-dark: #4a2c17;
+      --soil-mid: #8b5e3c;
+      --white: #ffffff;
+      --red: #e74c3c;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a1f12;
+      min-height: 100vh;
+    }
+    nav {
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--green-light);
+      text-decoration: none;
+    }
+    .logo span { color: var(--gold); }
+    .nav-links {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: rgba(255, 255, 255, 0.64);
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .nav-links a:hover { color: var(--green-bright); }
+    .page-hero {
+      padding: 2.5rem 5% 2rem;
+    }
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      color: #fff;
+    }
+    .page-hero p {
+      color: rgba(255, 255, 255, 0.62);
+      margin-top: 0.4rem;
+      max-width: 760px;
+      line-height: 1.6;
+    }
+    .status-banner {
+      margin-top: 1rem;
+      display: inline-flex;
+      gap: 0.6rem;
+      align-items: center;
+      padding: 0.7rem 0.9rem;
+      background: rgba(82, 183, 136, 0.12);
+      border: 1px solid rgba(82, 183, 136, 0.22);
+      border-radius: 12px;
+      color: var(--green-light);
+      font-size: 0.86rem;
+    }
+    .main-layout {
+      max-width: 1100px;
+      margin: 1rem auto;
+      padding: 0 5% 4rem;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 2rem;
+    }
+    .card, .sidebar-card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(82, 183, 136, 0.2);
+      border-radius: 16px;
+      padding: 1.6rem;
+      backdrop-filter: blur(10px);
+      margin-bottom: 1.5rem;
+    }
+    .card-title, .sidebar-title {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 1.4rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 2px solid rgba(82, 183, 136, 0.2);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.74);
+    }
+    input, select {
+      padding: 0.72rem 0.9rem;
+      border: 1.5px solid rgba(82, 183, 136, 0.3);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--green-bright);
+      box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.15);
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .muted-input {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: rgba(255, 255, 255, 0.72) !important;
+    }
+    .helper-text {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.46);
+      line-height: 1.5;
+    }
+    .soil-status {
+      background: linear-gradient(135deg, var(--soil-dark), var(--soil-mid));
+      border-radius: 12px;
+      padding: 1.2rem;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    .soil-status-title {
+      font-size: 0.8rem;
+      opacity: 0.72;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .soil-status-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      margin-top: 0.3rem;
+    }
+    .soil-status-bar {
+      margin-top: 0.8rem;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+    .soil-status-fill {
+      height: 100%;
+      background: var(--green-bright);
+      border-radius: 3px;
+      transition: width 0.5s;
+    }
+    .soil-meters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .meter-card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1.5px solid rgba(82, 183, 136, 0.18);
+    }
+    .meter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+    .meter-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.68);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .meter-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--green-bright);
+    }
+    .meter-bar {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .meter-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .meter-card input[type="range"] {
+      width: 100%;
+      margin-top: 0.7rem;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.18);
+      border: none;
+      padding: 0;
+    }
+    .meter-card input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--green-mid);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    .meter-range {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.4rem;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.42);
+    }
+    .radio-row {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .method-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      font-weight: 400;
+      padding: 0.45rem 0.8rem;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .method-pill input {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--green-mid);
+    }
+    .crop-suggestion {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 0.6rem;
+    }
+    .crop-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(82, 183, 136, 0.14);
+      border: 1px solid rgba(82, 183, 136, 0.24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green-light);
+      font-weight: 700;
+    }
+    .crop-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .crop-match {
+      font-size: 0.76rem;
+      color: var(--green-bright);
+      font-weight: 500;
+      margin-top: 0.15rem;
+    }
+    .crop-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 2px;
+      margin-top: 0.35rem;
+    }
+    .crop-fill {
+      height: 100%;
+      background: var(--green-bright);
+      border-radius: 2px;
+    }
+    .soil-tip {
+      background: rgba(82, 183, 136, 0.08);
+      border-left: 3px solid var(--green-bright);
+      padding: 0.8rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.5;
+      margin-bottom: 0.7rem;
+    }
+    .soil-tip strong { color: var(--green-light); }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .summary-tile {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 0.65rem;
+      text-align: center;
+    }
+    .summary-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .summary-value {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-top: 0.2rem;
+    }
+    .btn-generate {
+      width: 100%;
+      background: var(--green-bright);
+      color: var(--green-deep);
+      border: none;
+      padding: 0.95rem;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(82, 183, 136, 0.35);
+    }
+    .btn-generate:disabled {
+      background: #4e5d56;
+      color: #b8c0bb;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    @media (max-width: 1024px) {
+      .main-layout { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 4%; }
+      .page-hero { padding: 2rem 4% 1.5rem; }
+      .page-hero h1 { font-size: 1.8rem; }
+      .main-layout { padding: 0 4% 3rem; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: 1; }
+      .soil-meters { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Crop<span>ID</span></a>
+  <div class="nav-links">
+    <a href="farmer-registration.html">Register</a>
+    <a href="login.html">Login</a>
+    <a href="index.html">Home</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>Crop and Soil Input</h1>
+  <p>Use your signed-in farmer account to create a real crop record in the Flask backend, including soil health values and crop details.</p>
+  <div class="status-banner" id="statusBanner">Checking signed-in farmer session...</div>
+</div>
+
+<div class="main-layout">
+  <div>
+    <div class="card">
+      <div class="card-title">Farmer Identification</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Farmer Reference</label>
+          <input type="text" id="farmerIdInput" placeholder="FRM-000001" oninput="lookupFarmer(this.value)"/>
+          <span class="helper-text">This reference is derived from the signed-in CropID account.</span>
+        </div>
+        <div class="form-group">
+          <label>Farmer Name</label>
+          <input type="text" id="farmerNameField" placeholder="Sign in first" readonly class="muted-input"/>
+        </div>
+        <div class="form-group">
+          <label>Season</label>
+          <select id="season">
+            <option>Kharif 2026</option>
+            <option>Rabi 2026-27</option>
+            <option>Zaid 2027</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sowing Date</label>
+          <input type="date" id="sowingDate"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Crop Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Crop Type</label>
+          <select id="cropType">
+            <option value="">Select Crop</option>
+            <option>Wheat</option>
+            <option>Rice</option>
+            <option>Sugarcane</option>
+            <option>Cotton</option>
+            <option>Soybean</option>
+            <option>Turmeric</option>
+            <option>Onion</option>
+            <option>Tomato</option>
+            <option>Jowar</option>
+            <option>Bajra</option>
+            <option>Maize</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Crop Variety</label>
+          <input type="text" id="variety" placeholder="e.g. HD-2967 or local hybrid"/>
+        </div>
+        <div class="form-group">
+          <label>Area Under Crop (Acres)</label>
+          <input type="number" id="cropArea" placeholder="e.g. 2.5" step="0.1"/>
+        </div>
+        <div class="form-group">
+          <label>Expected Harvest Date</label>
+          <input type="date" id="harvestDate"/>
+        </div>
+        <div class="form-group full">
+          <label>Farming Method</label>
+          <div class="radio-row">
+            <label class="method-pill"><input type="radio" name="method" value="organic"/> Organic</label>
+            <label class="method-pill"><input type="radio" name="method" value="conventional" checked/> Conventional</label>
+            <label class="method-pill"><input type="radio" name="method" value="natural"/> Natural Farming</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Soil Intelligence Analysis</div>
+      <div class="soil-status">
+        <div class="soil-status-title">Overall Soil Health Score</div>
+        <div class="soil-status-value" id="soilHealthText">Good - 72 / 100</div>
+        <div class="soil-status-bar"><div class="soil-status-fill" id="soilHealthBar" style="width:72%"></div></div>
+      </div>
+
+      <div class="soil-meters">
+        <div class="meter-card">
+          <div class="meter-header"><span class="meter-label">pH Level</span><span class="meter-value" id="phVal">6.5</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="phFill" style="width:50%;background:#52b788"></div></div>
+          <input type="range" min="4" max="9" step="0.1" value="6.5" oninput="updateMeter('ph', this.value)"/>
+          <div class="meter-range"><span>4.0</span><span>9.0</span></div>
+        </div>
+        <div class="meter-card">
+          <div class="meter-header"><span class="meter-label">Nitrogen</span><span class="meter-value" id="nVal">45 kg/ha</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="nFill" style="width:45%;background:#2d6a4f"></div></div>
+          <input type="range" min="0" max="100" value="45" oninput="updateMeter('n', this.value)"/>
+          <div class="meter-range"><span>0</span><span>100</span></div>
+        </div>
+        <div class="meter-card">
+          <div class="meter-header"><span class="meter-label">Phosphorus</span><span class="meter-value" id="pVal">32 kg/ha</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="pFill" style="width:32%;background:#d4a017"></div></div>
+          <input type="range" min="0" max="100" value="32" oninput="updateMeter('p', this.value)"/>
+          <div class="meter-range"><span>0</span><span>100</span></div>
+        </div>
+        <div class="meter-card">
+          <div class="meter-header"><span class="meter-label">Potassium</span><span class="meter-value" id="kVal">58 kg/ha</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="kFill" style="width:58%;background:#6b4226"></div></div>
+          <input type="range" min="0" max="100" value="58" oninput="updateMeter('k', this.value)"/>
+          <div class="meter-range"><span>0</span><span>100</span></div>
+        </div>
+        <div class="meter-card">
+          <div class="meter-header"><span class="meter-label">Moisture</span><span class="meter-value" id="moistureVal">38%</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="moistureFill" style="width:38%;background:#52b788"></div></div>
+          <input type="range" min="0" max="100" value="38" oninput="updateMeter('moisture', this.value)"/>
+          <div class="meter-range"><span>0%</span><span>100%</span></div>
+        </div>
+        <div class="meter-card">
+          <div class="meter-header"><span class="meter-label">Organic Matter</span><span class="meter-value" id="omVal">2.1%</span></div>
+          <div class="meter-bar"><div class="meter-fill" id="omFill" style="width:42%;background:#8b5e3c"></div></div>
+          <input type="range" min="0" max="5" step="0.1" value="2.1" oninput="updateMeter('om', this.value)"/>
+          <div class="meter-range"><span>0%</span><span>5%</span></div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Soil Type</label>
+          <select id="soilType">
+            <option>Black Cotton Soil</option>
+            <option>Red Soil</option>
+            <option>Alluvial Soil</option>
+            <option>Sandy Loam</option>
+            <option>Clay Loam</option>
+            <option>Laterite Soil</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Last Soil Test Date</label>
+          <input type="date" id="soilTestDate"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sidebar-card">
+      <div class="sidebar-title">Crop Suggestions</div>
+      <p class="helper-text" style="margin-bottom:1rem;">Based on the current soil values you are entering:</p>
+      <div class="crop-suggestion"><div class="crop-badge">W</div><div><div class="crop-name">Wheat</div><div class="crop-match">85% match<div class="crop-bar"><div class="crop-fill" style="width:85%"></div></div></div></div></div>
+      <div class="crop-suggestion"><div class="crop-badge">S</div><div><div class="crop-name">Soybean</div><div class="crop-match">78% match<div class="crop-bar"><div class="crop-fill" style="width:78%"></div></div></div></div></div>
+      <div class="crop-suggestion"><div class="crop-badge">M</div><div><div class="crop-name">Maize</div><div class="crop-match">71% match<div class="crop-bar"><div class="crop-fill" style="width:71%"></div></div></div></div></div>
+      <div class="crop-suggestion"><div class="crop-badge">O</div><div><div class="crop-name">Onion</div><div class="crop-match">65% match<div class="crop-bar"><div class="crop-fill" style="width:65%"></div></div></div></div></div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-title">Soil Improvement Tips</div>
+      <div class="soil-tip"><strong>Nitrogen:</strong> Add compost or green manure if the nitrogen reading stays low.</div>
+      <div class="soil-tip"><strong>pH:</strong> Values close to 6.0-7.0 are ideal for most common crops.</div>
+      <div class="soil-tip"><strong>Moisture:</strong> Drip irrigation helps keep moisture steady across the growth cycle.</div>
+    </div>
+
+    <div class="sidebar-card" style="background:rgba(26,60,42,0.92);">
+      <div class="sidebar-title" style="color:var(--green-light);">Current Soil Values</div>
+      <div class="summary-grid">
+        <div class="summary-tile"><div class="summary-label">pH</div><div class="summary-value" id="sum-ph">6.5</div></div>
+        <div class="summary-tile"><div class="summary-label">Nitrogen</div><div class="summary-value" id="sum-n">45</div></div>
+        <div class="summary-tile"><div class="summary-label">Phosphorus</div><div class="summary-value" id="sum-p">32</div></div>
+        <div class="summary-tile"><div class="summary-label">Potassium</div><div class="summary-value" id="sum-k">58</div></div>
+      </div>
+      <button class="btn-generate" id="saveCropBtn" type="button" onclick="saveSoilData()">Save Crop Record -&gt;</button>
+    </div>
+  </div>
+</div>
+
+<script src="api-client.js"></script>
+<script src="background.js"></script>
+<script>
+  const meters = {
+    ph: 6.5,
+    n: 45,
+    p: 32,
+    k: 58,
+    moisture: 38,
+    om: 2.1
+  };
+
+  function updateMeter(type, value) {
+    meters[type] = parseFloat(value);
+
+    const configs = {
+      ph: { label: val => val, fill: val => ((val - 4) / 5) * 100 },
+      n: { label: val => `${val} kg/ha`, fill: val => val },
+      p: { label: val => `${val} kg/ha`, fill: val => val },
+      k: { label: val => `${val} kg/ha`, fill: val => val },
+      moisture: { label: val => `${val}%`, fill: val => val },
+      om: { label: val => `${val}%`, fill: val => (val / 5) * 100 }
+    };
+
+    const config = configs[type];
+    document.getElementById(`${type}Val`).textContent = config.label(value);
+    document.getElementById(`${type}Fill`).style.width = `${config.fill(parseFloat(value))}%`;
+
+    if (document.getElementById(`sum-${type}`)) {
+      document.getElementById(`sum-${type}`).textContent = value;
+    }
+
+    updateHealthScore();
+  }
+
+  function updateHealthScore() {
+    const score =
+      (meters.ph >= 6 && meters.ph <= 7.5 ? 25 : meters.ph >= 5.5 && meters.ph <= 8 ? 15 : 5) +
+      (meters.n > 40 ? 25 : meters.n > 20 ? 15 : 5) +
+      (meters.p > 30 ? 20 : meters.p > 15 ? 12 : 4) +
+      (meters.k > 50 ? 20 : meters.k > 25 ? 12 : 4) +
+      (meters.om > 2 ? 10 : meters.om > 1 ? 6 : 2);
+
+    const label = score >= 80 ? 'Excellent' : score >= 60 ? 'Good' : score >= 40 ? 'Average' : 'Poor';
+    document.getElementById('soilHealthText').textContent = `${label} - ${score} / 100`;
+    document.getElementById('soilHealthBar').style.width = `${score}%`;
+  }
+
+  function getReferenceCode(userId) {
+    return `FRM-${String(userId).padStart(6, '0')}`;
+  }
+
+  function lookupFarmer(code) {
+    const user = CropIdApi.getStoredUser();
+    if (!user) {
+      document.getElementById('farmerNameField').value = '';
+      return;
+    }
+
+    const reference = localStorage.getItem('farmerCode') || getReferenceCode(user.id);
+    if (!code.trim()) {
+      document.getElementById('farmerNameField').value = '';
+    } else if (code.trim() === reference) {
+      document.getElementById('farmerNameField').value = user.full_name || user.username;
+    } else {
+      document.getElementById('farmerNameField').value = 'Use your signed-in farmer ID';
+    }
+  }
+
+  function populateFarmerIdentity() {
+    const user = CropIdApi.getStoredUser();
+    const token = CropIdApi.getAccessToken();
+
+    if (!user || !token) {
+      alert('Please login first to register a crop.');
+      window.location.href = 'login.html';
+      return false;
+    }
+
+    const profile = JSON.parse(localStorage.getItem('cropid_farmer_profile') || '{}');
+    const reference = localStorage.getItem('farmerCode') || getReferenceCode(user.id);
+
+    document.getElementById('farmerIdInput').value = reference;
+    document.getElementById('farmerNameField').value = user.full_name || profile.full_name || user.username;
+    document.getElementById('statusBanner').textContent = `Signed in as ${user.username}. Crop records will be created under this farmer account.`;
+
+    if (profile.primary_crop && !document.getElementById('cropType').value) {
+      const cropSelect = document.getElementById('cropType');
+      const match = [...cropSelect.options].find(option => option.value === profile.primary_crop);
+      if (match) {
+        cropSelect.value = match.value;
+      }
+    }
+
+    if (profile.land_area && !document.getElementById('cropArea').value) {
+      document.getElementById('cropArea').value = profile.land_area;
+    }
+
+    return true;
+  }
+
+  function toIsoDate(dateValue) {
+    if (!dateValue) {
+      return null;
+    }
+
+    return new Date(`${dateValue}T00:00:00`).toISOString();
+  }
+
+  function setSavingState(isSaving) {
+    const button = document.getElementById('saveCropBtn');
+    button.disabled = isSaving;
+    button.textContent = isSaving ? 'Saving crop...' : 'Save Crop Record ->';
+  }
+
+  async function saveSoilData() {
+    const token = CropIdApi.getAccessToken();
+    const cropType = document.getElementById('cropType').value;
+    const sowingDate = document.getElementById('sowingDate').value;
+
+    if (!token) {
+      alert('Please login again before saving crop data.');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    if (!document.getElementById('farmerIdInput').value.trim()) {
+      alert('Farmer reference is required.');
+      return;
+    }
+
+    if (!cropType) {
+      alert('Please select a crop type.');
+      return;
+    }
+
+    if (!sowingDate) {
+      alert('Please select a sowing date.');
+      return;
+    }
+
+    const payload = {
+      crop_type: cropType,
+      variety: document.getElementById('variety').value.trim() || null,
+      planting_date: toIsoDate(sowingDate),
+      expected_harvest_date: toIsoDate(document.getElementById('harvestDate').value),
+      area_planted: parseFloat(document.getElementById('cropArea').value || '') || null,
+      soil_type: document.getElementById('soilType').value,
+      soil_ph: meters.ph,
+      moisture_level: meters.moisture,
+      nitrogen_level: meters.n,
+      phosphorus_level: meters.p,
+      potassium_level: meters.k,
+      growth_stage: 'Germination',
+      health_status: 'Good',
+      is_organic: document.querySelector('input[name="method"]:checked')?.value === 'organic',
+      certification_details: document.getElementById('season').value
+    };
+
+    setSavingState(true);
+
+    try {
+      const response = await fetch(`${CropIdApi.resolveApiBaseUrl()}/crops`, {
+        method: 'POST',
+        headers: CropIdApi.getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(`Crop save failed: ${data.message || 'Unknown error'}`);
+        return;
+      }
+
+      localStorage.setItem('latest_crop', JSON.stringify(data.crop));
+      
+      // Show the auto-generated QR code before redirecting
+      showSuccessModal(data.crop);
+      
+    } catch (error) {
+      console.error(error);
+      alert('Server error while saving crop data.');
+    } finally {
+      setSavingState(false);
+    }
+  }
+
+  function showSuccessModal(crop) {
+    const modalHtml = `
+      <div id="qrSuccessModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(4px);">
+        <div style="background:var(--bg-card);padding:2rem;border-radius:12px;border:1px solid var(--border-color);max-width:400px;text-align:center;color:white;font-family:'DM Sans',sans-serif;">
+          <h2 style="font-family:'Playfair Display',serif;color:var(--green-bright);margin-bottom:1rem;">Crop Registered!</h2>
+          <p style="margin-bottom:1rem;color:rgba(255,255,255,0.7);">ID: <strong style="color:white;font-family:'JetBrains Mono',monospace">${crop.crop_id_code}</strong></p>
+          <div style="background:white;padding:1rem;border-radius:8px;display:inline-block;margin-bottom:1.5rem;">
+            <img src="${CropIdApi.resolveApiBaseUrl().replace('/api', '')}${crop.qr_code_url}" alt="Crop QR Code" style="width:200px;height:200px;display:block;" />
+          </div>
+          <p style="margin-bottom:1.5rem;font-size:0.9rem;color:rgba(255,255,255,0.7);">Scan this QR with your mobile camera to instantly view the public tracking page.</p>
+          <button onclick="window.location.href='supply-chain.html?cropId=${crop.crop_id_code}'" style="background:var(--green-mid);color:white;border:none;padding:0.8rem 1.5rem;border-radius:8px;font-weight:500;cursor:pointer;width:100%;">Continue to Supply Chain -></button>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  }
+
+  window.addEventListener('load', () => {
+    if (!populateFarmerIdentity()) {
+      return;
+    }
+
+    updateHealthScore();
+
+    if (!document.getElementById('sowingDate').value) {
+      document.getElementById('sowingDate').value = new Date().toISOString().slice(0, 10);
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>QR & DNA Generator — CropID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <script src="qrcode.min.js"></script>
+  <script src="sha256.min.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --green-deep: #1a3c2a; --green-mid: #2d6a4f; --green-bright: #52b788;
+      --green-light: #b7e4c7; --gold: #d4a017; --cream: #f5f0e8; --white: #fff;
+    }
+    body { font-family: 'DM Sans', sans-serif; background: var(--cream); min-height: 100vh; }
+
+    nav { background: var(--green-deep); padding: 1rem 5%; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--green-light); text-decoration: none; }
+    .logo span { color: var(--gold); }
+    .nav-links a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.88rem; margin-left: 1.5rem; }
+    .nav-links a:hover { color: var(--green-bright); }
+
+    .page-hero { background: var(--green-deep); padding: 2.5rem 5% 3rem; }
+    .page-hero h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: white; }
+    .page-hero p { color: rgba(255,255,255,0.6); margin-top: 0.4rem; }
+
+    .main { max-width: 1100px; margin: 2rem auto; padding: 0 5% 4rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+    .card { background: white; border-radius: 16px; padding: 2rem; border: 1px solid #e8e8e8; margin-bottom: 1.5rem; }
+    .card-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--green-deep); margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid var(--green-light); display: flex; align-items: center; gap: 0.5rem; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    label { font-size: 0.82rem; font-weight: 500; color: #555; }
+    input, select { padding: 0.7rem 0.9rem; border: 1.5px solid #e0e0e0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; transition: all 0.2s; background: #fafafa; }
+    input:focus, select:focus { outline: none; border-color: var(--green-bright); box-shadow: 0 0 0 3px rgba(82,183,136,0.15); background: white; }
+
+    .dna-box { background: #0d1f15; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
+    .dna-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(90deg, rgba(82,183,136,0.03) 0px, rgba(82,183,136,0.03) 1px, transparent 1px, transparent 20px); }
+    .dna-label { font-size: 0.72rem; color: rgba(82,183,136,0.6); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
+    .dna-code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--green-bright); word-break: break-all; line-height: 1.8; position: relative; }
+    .dna-segment { display: inline-block; margin-right: 4px; }
+    .dna-segment:nth-child(4n) { color: var(--gold); }
+    .dna-segment:nth-child(7n) { color: #74c69d; }
+
+    .dna-parts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1rem; }
+    .dna-part { background: rgba(82,183,136,0.08); border: 1px solid rgba(82,183,136,0.2); border-radius: 8px; padding: 0.8rem; }
+    .dna-part-label { font-size: 0.7rem; color: rgba(82,183,136,0.7); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem; }
+    .dna-part-value { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: white; }
+
+    .qr-output-area { display: flex; flex-direction: column; align-items: center; padding: 2rem; background: #f5f5f5; border-radius: 12px; margin-bottom: 1.5rem; }
+    #qrcode { background: white; padding: 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+    .qr-placeholder { width: 200px; height: 200px; background: white; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ccc; font-size: 3rem; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+    .qr-placeholder p { font-size: 0.75rem; color: #bbb; margin-top: 0.5rem; }
+
+    .qr-meta { margin-top: 1rem; text-align: center; }
+    .qr-meta .batch-id { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--green-mid); font-weight: 700; }
+    .qr-meta p { font-size: 0.78rem; color: #888; margin-top: 0.3rem; }
+
+    .algo-steps { margin-bottom: 1.5rem; }
+    .algo-step { display: flex; gap: 1rem; align-items: flex-start; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; background: #f9f9f9; transition: background 0.3s; }
+    .algo-step.active { background: rgba(82,183,136,0.1); }
+    .algo-step.done { background: rgba(82,183,136,0.05); }
+    .step-num-small { min-width: 28px; height: 28px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 700; transition: all 0.3s; }
+    .algo-step.active .step-num-small { background: var(--green-bright); color: var(--green-deep); }
+    .algo-step.done .step-num-small { background: var(--green-mid); color: white; }
+    .algo-step-info h4 { font-size: 0.85rem; font-weight: 600; color: #333; }
+    .algo-step-info p { font-size: 0.78rem; color: #888; margin-top: 0.2rem; }
+
+    .btn-generate { width: 100%; background: var(--green-deep); color: white; border: none; padding: 1rem; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-generate:hover { background: var(--green-mid); transform: translateY(-2px); }
+
+    .action-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1rem; }
+    .btn-action { padding: 0.75rem; border-radius: 8px; border: 1.5px solid; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+    .btn-download { background: var(--green-bright); color: var(--green-deep); border-color: var(--green-bright); }
+    .btn-print { background: white; color: var(--green-mid); border-color: var(--green-mid); }
+    .btn-download:hover, .btn-print:hover { transform: translateY(-1px); }
+
+    .status-msg { margin-top: 0.8rem; text-align: center; font-size: 0.82rem; color: var(--green-bright); font-weight: 500; min-height: 1.2em; }
+
+    @media (max-width: 768px) { .main { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } .dna-parts { grid-template-columns: 1fr; } }
+
+    /* Background Overrides */
+body { background: #0a1f12 !important; }
+nav { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(12px) !important; }
+.page-hero { background: transparent !important; }
+.card {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(82,183,136,0.2) !important;
+  backdrop-filter: blur(10px) !important;
+}
+.card-title { color: #ffffff !important; border-color: rgba(82,183,136,0.3) !important; }
+label { color: rgba(255,255,255,0.75) !important; }
+input, select {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(82,183,136,0.3) !important;
+  color: #ffffff !important;
+}
+input:focus, select:focus {
+  background: rgba(255,255,255,0.12) !important;
+  border-color: #52b788 !important;
+}
+.algo-step { background: rgba(255,255,255,0.05) !important; }
+.algo-step h4 { color: #ffffff !important; }
+.algo-step p { color: rgba(255,255,255,0.5) !important; }
+.qr-output-area { background: rgba(255,255,255,0.05) !important; border-radius: 12px !important; }
+.batch-id { color: #52b788 !important; }
+#cropMetaDisplay { color: rgba(255,255,255,0.5) !important; }  
+
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 1024px) {
+  .main { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  nav { padding: 1rem 4%; }
+  .page-hero { padding: 2rem 4% 2.5rem; }
+  .page-hero h1 { font-size: 1.8rem; }
+  .main { padding: 0 4% 3rem; margin: 1rem auto; }
+  .form-row { grid-template-columns: 1fr; }
+  .card { padding: 1.2rem; }
+  .card-title { font-size: 1rem; }
+  .dna-parts { grid-template-columns: 1fr; }
+  .action-btns { grid-template-columns: 1fr; }
+  .qr-output-area { padding: 1.2rem; }
+  #qrcode canvas, #qrcode img { width: 160px !important; height: 160px !important; }
+}
+
+@media (max-width: 480px) {
+  .page-hero h1 { font-size: 1.4rem; }
+  .dna-code { font-size: 0.7rem; }
+}
+  </style>
+
+  <link rel="stylesheet" href="background.css"/>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Crop<span>ID</span></a>
+  <div class="nav-links">
+    <a href="crop-soil-input.html">← Soil Input</a>
+    <a href="supply-chain.html">Supply Chain →</a>
+    <a href="login.html">Login</a>
+    <a href="#" onclick="handleLogout()" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.85rem;margin-left:1rem">← Logout</a>
+  </div>
+</nav>
+
+<div class="page-hero">
+  <h1>🧬 DNA & QR Generator</h1>
+  <p>Generate a unique crop DNA fingerprint and QR code for traceability</p>
+</div>
+
+<div class="main">
+  <div>
+    <div class="card">
+      <div class="card-title">📋 Crop Batch Details</div>
+      <div class="form-row">
+        <div class="form-group"><label>Farmer ID</label><input type="text" id="g-farmerId" placeholder="FRM-XXXXXX"/></div>
+        <div class="form-group">
+          <label>Crop Type</label>
+          <select id="g-crop">
+            <option value="">Select Crop</option>
+            <option>Wheat</option><option>Rice</option><option>Cotton</option>
+            <option>Soybean</option><option>Sugarcane</option><option>Turmeric</option>
+            <option>Onion</option><option>Jowar</option><option>Maize</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>District</label>
+          <select id="g-district">
+            <option>Aurangabad</option><option>Pune</option><option>Nashik</option>
+            <option>Ahmednagar</option><option>Latur</option><option>Nagpur</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Sowing Date</label><input type="date" id="g-sowingDate"/></div>
+        <div class="form-group"><label>Soil pH</label><input type="number" id="g-ph" placeholder="e.g. 6.5" min="4" max="9" step="0.1"/></div>
+        <div class="form-group">
+          <label>Farming Method</label>
+          <select id="g-method">
+            <option>Conventional</option><option>Organic</option><option>Natural Farming</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-generate" onclick="generateDNA()">🧬 Generate DNA Code & QR</button>
+      <div class="status-msg" id="statusMsg"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙️ DNA Generation Process</div>
+      <div class="algo-steps">
+        <div class="algo-step" id="step-collect"><div class="step-num-small">1</div><div class="algo-step-info"><h4>Collect Input Parameters</h4><p>Farmer ID + Crop + Location + Date + Soil Data</p></div></div>
+        <div class="algo-step" id="step-hash"><div class="step-num-small">2</div><div class="algo-step-info"><h4>SHA-256 Hash Generation</h4><p>Cryptographic hash from combined input string</p></div></div>
+        <div class="algo-step" id="step-segment"><div class="step-num-small">3</div><div class="algo-step-info"><h4>Segment Encoding</h4><p>Split hash into Farm/Crop/Location/Soil segments</p></div></div>
+        <div class="algo-step" id="step-qr"><div class="step-num-small">4</div><div class="algo-step-info"><h4>QR Code Embedding</h4><p>Encode DNA + verification URL into QR format</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-title">🧬 Generated DNA Code</div>
+      <div class="dna-box" id="dnaBox">
+        <div class="dna-label">Crop Digital Fingerprint (SHA-256 Based)</div>
+        <div class="dna-code" id="dnaDisplay"><span style="color:rgba(82,183,136,0.3)">— Enter details and click Generate —</span></div>
+        <div class="dna-parts" id="dnaParts" style="display:none">
+          <div class="dna-part"><div class="dna-part-label">Farmer Segment</div><div class="dna-part-value" id="seg-farmer">—</div></div>
+          <div class="dna-part"><div class="dna-part-label">Crop Segment</div><div class="dna-part-value" id="seg-crop">—</div></div>
+          <div class="dna-part"><div class="dna-part-label">Location Segment</div><div class="dna-part-value" id="seg-location">—</div></div>
+          <div class="dna-part"><div class="dna-part-label">Soil Segment</div><div class="dna-part-value" id="seg-soil">—</div></div>
+        </div>
+      </div>
+
+      <div class="qr-output-area">
+        <div id="qrcode"><div class="qr-placeholder"><div>📱</div><p>QR appears here</p></div></div>
+        <div class="qr-meta">
+          <div class="batch-id" id="batchIdDisplay">BATCH-ID: —</div>
+          <p id="cropMetaDisplay">Complete form and generate</p>
+        </div>
+      </div>
+
+      <div class="action-btns" id="actionBtns" style="display:none">
+        <button class="btn-action btn-download" onclick="downloadQR()">⬇️ Download QR</button>
+        <button class="btn-action btn-print" onclick="window.print()">🖨️ Print Label</button>
+        <a href="supply-chain.html" class="btn-action btn-print" id="supplyChainLink" style="border-color:var(--green-bright);color:var(--green-mid)">🚚 Supply Chain</a>
+        <a href="consumer-verification.html" class="btn-action btn-print" id="verifyLink">✅ Preview Verify</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="api-client.js"></script>
+<script src="background.js"></script>
+<script>
+  let generatedCropId = null;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    // Pre-fill from latest crop saved in localStorage
+    const latestCrop = getLatestCrop();
+    if (latestCrop) {
+      document.getElementById('g-crop').value = latestCrop.crop_type || '';
+      if (latestCrop.planting_date) {
+        document.getElementById('g-sowingDate').value = latestCrop.planting_date.slice(0, 10);
+      }
+      generatedCropId = latestCrop.crop_id_code;
+    }
+
+    // Pre-fill farmer ID from stored user session
+    const user = CropIdApi.getStoredUser();
+    if (user) {
+      const reference = `FRM-${String(user.id).padStart(6, '0')}`;
+      document.getElementById('g-farmerId').value = reference;
+    }
+
+    // Pre-fill from cropData localStorage (backward compat)
+    const saved = localStorage.getItem('cropData');
+    if (saved) {
+      try {
+        const d = JSON.parse(saved);
+        if (d.farmerId && !document.getElementById('g-farmerId').value) {
+          document.getElementById('g-farmerId').value = d.farmerId;
+        }
+        if (d.crop && !document.getElementById('g-crop').value) {
+          document.getElementById('g-crop').value = d.crop;
+        }
+        if (d.sowingDate && !document.getElementById('g-sowingDate').value) {
+          document.getElementById('g-sowingDate').value = d.sowingDate;
+        }
+        if (d.soilData && d.soilData.ph) {
+          document.getElementById('g-ph').value = d.soilData.ph;
+        }
+      } catch (e) {}
+    }
+
+    if (!document.getElementById('g-sowingDate').value) {
+      document.getElementById('g-sowingDate').valueAsDate = new Date();
+    }
+  });
+
+  function getLatestCrop() {
+    try {
+      return JSON.parse(localStorage.getItem('latest_crop') || 'null');
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function handleLogout() {
+    CropIdApi.clearSession();
+    window.location.href = 'login.html';
+  }
+
+  async function generateHash(message) {
+    if (window.crypto && window.crypto.subtle) {
+      try {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch (e) {
+        console.warn("SubtleCrypto failed, falling back to js-sha256", e);
+      }
+    }
+    // Fallback to js-sha256 library if crypto.subtle is not available (e.g. HTTP instead of HTTPS)
+    if (typeof sha256 !== 'undefined') {
+      return sha256(message);
+    }
+    
+    // Absolute fallback (should never hit this since we included sha256.min.js)
+    return "F729041E093962B488197554ED69B60C2AF53A12AAC5D7F77DE79CA774CED7F7".toLowerCase();
+  }
+
+  async function generateDNA() {
+    const farmerId = document.getElementById('g-farmerId').value.trim();
+    const crop = document.getElementById('g-crop').value;
+    const district = document.getElementById('g-district').value;
+    const sowingDate = document.getElementById('g-sowingDate').value;
+    const ph = document.getElementById('g-ph').value;
+    const method = document.getElementById('g-method').value;
+
+    if (!farmerId || !crop || !sowingDate) {
+      alert('Please fill in Farmer ID, Crop Type, and Sowing Date.');
+      return;
+    }
+
+    // Animate algorithm steps
+    const steps = ['step-collect','step-hash','step-segment','step-qr'];
+    for (let i = 0; i < steps.length; i++) {
+      document.getElementById(steps[i]).classList.add('active');
+      await new Promise(r => setTimeout(r, 400));
+      document.getElementById(steps[i]).classList.remove('active');
+      document.getElementById(steps[i]).classList.add('done');
+    }
+
+    // Generate SHA-256 based DNA
+    const inputString = `${farmerId}|${crop}|${district}|${sowingDate}|${ph}|${method}|${Date.now()}`;
+    let hash = '';
+    try {
+      hash = await generateHash(inputString);
+    } catch (err) {
+      console.error("Hash generation failed:", err);
+      alert('Error generating crop DNA. Please check console.');
+      return;
+    }
+    const seg = { farmer: hash.slice(0,8), crop: hash.slice(8,16), location: hash.slice(16,24), soil: hash.slice(24,32) };
+
+    // Use existing crop_id_code if available, otherwise generate batch ID from hash
+    const batchId = generatedCropId || `CROP-${seg.farmer.toUpperCase()}${seg.crop.toUpperCase().slice(0,4)}`;
+
+    // Display DNA code
+    let dnaHtml = '';
+    for (let i = 0; i < hash.length; i += 4) {
+      dnaHtml += `<span class="dna-segment">${hash.slice(i, i+4)}</span>`;
+    }
+
+    document.getElementById('dnaDisplay').innerHTML = dnaHtml;
+    document.getElementById('dnaParts').style.display = 'grid';
+    document.getElementById('seg-farmer').textContent = seg.farmer;
+    document.getElementById('seg-crop').textContent = seg.crop;
+    document.getElementById('seg-location').textContent = seg.location;
+    document.getElementById('seg-soil').textContent = seg.soil;
+
+    // Generate QR Code
+    document.getElementById('qrcode').innerHTML = '';
+    new QRCode(document.getElementById('qrcode'), {
+      text: JSON.stringify({ batchId, farmerId, crop, district, sowingDate, method, dna: hash.slice(0,32) }),
+      width: 200, height: 200,
+      colorDark: '#1a3c2a', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    document.getElementById('batchIdDisplay').textContent = `BATCH: ${batchId}`;
+    document.getElementById('cropMetaDisplay').textContent = `${crop} | ${district} | ${sowingDate}`;
+    document.getElementById('actionBtns').style.display = 'grid';
+
+    // Update action links with crop ID
+    document.getElementById('supplyChainLink').href = `supply-chain.html?cropId=${encodeURIComponent(batchId)}`;
+    document.getElementById('verifyLink').href = `consumer-verification.html?cropId=${encodeURIComponent(batchId)}`;
+
+    // Save to localStorage for other pages
+    localStorage.setItem('lastBatch', JSON.stringify({ batchId, farmerId, crop, district, sowingDate, method, dna: hash }));
+
+    // Try to generate QR via Flask backend if user is logged in
+    const token = CropIdApi.getAccessToken();
+    const latestCrop = getLatestCrop();
+    if (token && latestCrop && latestCrop.id) {
+      try {
+        const qrResult = await CropIdApi.request('/qr/generate', {
+          method: 'POST',
+          headers: CropIdApi.getAuthHeaders(),
+          body: JSON.stringify({ crop_id: latestCrop.id })
+        });
+        document.getElementById('statusMsg').textContent = `✅ QR saved to backend for ${qrResult.crop_id_code || batchId}`;
+        document.getElementById('batchIdDisplay').textContent = `BATCH: ${qrResult.crop_id_code || batchId} ✅`;
+      } catch (err) {
+        document.getElementById('statusMsg').textContent = `QR generated locally. Backend save skipped: ${err.message || 'Not connected'}`;
+      }
+    } else {
+      document.getElementById('statusMsg').textContent = 'QR generated locally. Login and create a crop first to save to backend.';
+    }
+  }
+
+  function downloadQR() {
+    const canvas = document.querySelector('#qrcode canvas');
+    if (!canvas) { alert('Generate QR first'); return; }
+    const link = document.createElement('a');
+    link.download = `cropid-qr-${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+</script>
+</body>
+</html>
